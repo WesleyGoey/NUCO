@@ -9,11 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('product_ingredients', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); //bisa pakai enum 
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
+            $table->decimal('amount_needed', 10, 2);
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('product_ingredients');
     }
 };

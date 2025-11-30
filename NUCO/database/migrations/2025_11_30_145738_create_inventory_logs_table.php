@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('inventory_logs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('ingredient_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->decimal('change_amount', 10, 2);
+            $table->enum('type', ['purchase', 'consumption', 'waste']);
             $table->timestamps();
         });
     }
