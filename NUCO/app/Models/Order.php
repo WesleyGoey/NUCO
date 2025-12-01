@@ -18,8 +18,10 @@ class Order extends Model
         'order_name',
         'total_price',
         'status',
+        'discount_id'
     ];
 
+    // Relationships
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -27,7 +29,12 @@ class Order extends Model
 
     public function table(): BelongsTo
     {
-        return $this->belongsTo(RestaurantTable::class);
+        return $this->belongsTo(RestaurantTable::class, 'restaurant_table_id');
+    }
+
+    public function discount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class);
     }
 
     public function products(): BelongsToMany

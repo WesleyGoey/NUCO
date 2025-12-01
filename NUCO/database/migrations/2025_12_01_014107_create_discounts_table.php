@@ -9,11 +9,14 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('discounts', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); //bisa pakai enum 
+            $table->string('name');
+            $table->integer('value');
+            $table->enum('type', ['percent', 'amount'])->default('amount');
+            $table->integer('min_order_amount')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('discounts');
     }
 };
