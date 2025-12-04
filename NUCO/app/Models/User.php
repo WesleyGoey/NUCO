@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -53,34 +54,33 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'cashier_id');
     }
 
-    // Helper methods
-    // public function hasRole(string $roleName): bool
-    // {
-    //     return $this->role && $this->role->name === $roleName;
-    // }
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
 
-    // public function isOwner(): bool
-    // {
-    //     return $this->hasRole('owner');
-    // }
-    
-    // public function isWaiter(): bool
-    // {
-    //     return $this->hasRole('waiter');
-    // }
+    public function isOwner(): bool
+    {
+        return $this->hasRole('owner');
+    }
 
-    // public function isChef(): bool
-    // {
-    //     return $this->hasRole('chef');
-    // }
+    public function isWaiter(): bool
+    {
+        return $this->hasRole('waiter');
+    }
 
-    // public function isCashier(): bool
-    // {
-    //     return $this->hasRole('cashier');
-    // }
-    
-    // public function isReviewer(): bool
-    // {
-    //     return $this->hasRole('reviewer');
-    // }
+    public function isChef(): bool
+    {
+        return $this->hasRole('chef');
+    }
+
+    public function isReviewer(): bool
+    {
+        return $this->hasRole('reviewer');
+    }
+
+    public function isGuestUser(): bool
+    {
+        return $this->hasRole('guest');
+    }
 }
