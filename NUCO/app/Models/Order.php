@@ -21,7 +21,6 @@ class Order extends Model
         'discount_id'
     ];
 
-    // Relationships
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

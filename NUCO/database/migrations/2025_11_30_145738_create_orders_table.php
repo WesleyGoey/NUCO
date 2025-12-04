@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('restaurant_table_id')->nullable()->constrained()->onDelete('set null');
             $table->string('order_name')->nullable();
             $table->integer('total_price')->default(0);
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'completed'])->default('pending');
             $table->timestamps();
         });
     }
