@@ -2,21 +2,38 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
+        // run seeders in dependency-safe order
         $this->call([
-            UserSeeder::class
+            // users first (other tables reference users)
+            UserSeeder::class,
+
+            // basic reference data
+            RestaurantTableSeeder::class,
+            ProductSeeder::class,
+            IngredientSeeder::class,
+
+            // discounts + periods
+            DiscountSeeder::class,
+            // orders depend on users, products, tables, discounts
+            OrderSeeder::class,
+
+            // payments after orders
+            PaymentSeeder::class,
+
+            // inventory logs after ingredients & orders
+            InventoryLogSeeder::class,
+
+            // reviews (reviewers expected in users)
+            ReviewSeeder::class,
         ]);
     }
 }

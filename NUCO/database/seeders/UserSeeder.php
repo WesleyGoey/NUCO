@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             'password' => bcrypt('waiter123'),
             'phone' => '12345678',
             'role' => 'waiter',
-                'status' => 'active'
+            'status' => 'active'
         ]);
         User::create([
             'username' => 'Chef',
@@ -35,15 +35,15 @@ class UserSeeder extends Seeder
             'password' => bcrypt('chef123'),
             'phone' => '12345678',
             'role' => 'chef',
-                'status' => 'active'
+            'status' => 'active'
         ]);
         User::create([
             'username' => 'Cashier',
             'email' => 'cashier@gmail.com',
             'password' => bcrypt('cashier123'),
             'phone' => '12345678',
-           'role' => 'cashier',
-                'status' => 'active'
+            'role' => 'cashier',
+            'status' => 'active'
         ]);
         User::create([
             'username' => 'Reviewer',
