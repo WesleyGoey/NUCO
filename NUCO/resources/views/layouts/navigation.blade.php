@@ -1,54 +1,64 @@
 <nav class="navbar navbar-expand-lg" style="background-color: #A4823B; box-shadow: 0 2px 4px rgba(0,0,0,0.25);">
     <div class="container-fluid position-relative" style="min-height:70px;">
-        <div class="d-flex align-items-center" style="height:70px;">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}" style="margin-left:8px;">
+        <div class="d-flex align-items-center justify-content-between" style="height:70px; width:100%;">
+            <!-- BRAND (left) -->
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}" style="margin-left:8px;">
                 <span style="background:#F5F0E5;border-radius:50%;width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo {{ config('app.name', 'NUCO') }}" style="height:40px;width:40px;object-fit:contain;">
                 </span>
             </a>
 
-            {{-- Navbar toggler: visible only on small screens because of navbar-expand-lg --}}
-            <button class="navbar-toggler ms-auto border-0" type="button" data-bs-toggle="collapse"
-                data-bs-target="#nucoNavbar" aria-controls="nucoNavbar" aria-expanded="false"
-                aria-label="Toggle navigation" style="background:transparent;">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-
-        {{-- Collapse: links will display inline on lg+ and collapse under toggler on small screens --}}
-        <div class="collapse navbar-collapse" id="nucoNavbar">
-            <div class="w-100 d-flex justify-content-end align-items-center" style="gap:2rem;">
-                <ul class="navbar-nav mb-2 mb-lg-0 d-flex flex-row align-items-center" style="gap:1.5rem;">
-                    <li class="nav-item">
-                        <a class="nav-link fs-5" href="{{ route('menu') }}" style="color:#F5F0E5; text-decoration:none;">Menu</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link fs-5" href="{{ route('discounts') }}" style="color:#F5F0E5; text-decoration:none;">Discounts</a>
-                    </li>
+            <!-- DESKTOP LINKS (right) -->
+            <div class="d-none d-lg-flex align-items-center ms-auto" style="gap:2rem;">
+                <ul class="navbar-nav mb-0 d-flex flex-row align-items-center" style="gap:1.5rem;">
+                    <li class="nav-item"><a class="nav-link fs-5" href="{{ route('menu') }}">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link fs-5" href="{{ route('discounts') }}">Discounts</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center" style="gap:0.6rem;">
                     @guest
-                        <a class="btn px-3 py-2" href="{{ route('login') }}"
-                            style="background:#F5F0E5;color:#A4823B;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06); text-decoration:none;">Login</a>
+                        <!-- Login as pill on desktop -->
+                        <a class="btn px-3 py-2" href="{{ route('login') }}" style="background:#F5F0E5;color:#A4823B;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;font-weight:400;">Login</a>
                     @else
                         <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                             @csrf
-                            <button type="submit" class="btn btn-sm" style="background:#F5F0E5;color:#A4823B;border-radius:20px;border:none;">Logout</button>
+                            <button type="submit" class="btn btn-sm" style="background:#F5F0E5;color:#A4823B;border-radius:20px;border:none;font-weight:400;">Logout</button>
                         </form>
                     @endguest
                 </div>
+            </div>
+
+            <!-- TOGGLER (mobile, right) -->
+            <button class="navbar-toggler d-lg-none border-0 ms-auto" type="button" data-bs-toggle="collapse"
+                data-bs-target="#nucoNavbar" aria-controls="nucoNavbar" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <i class="bi-list"></i>
+            </button>
+        </div>
+
+        <!-- COLLAPSE: mobile vertical panel (pushes content) -->
+        <div class="collapse navbar-collapse" id="nucoNavbar">
+            <div class="w-100">
+                <ul class="navbar-nav d-lg-none flex-column" style="gap:0.6rem; padding:0.75rem 1rem; margin:0;">
+                    <li class="nav-item"><a class="nav-link" href="{{ route('menu') }}">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('discounts') }}">Discounts</a></li>
+
+                    @guest
+                        <!-- mobile: Login shown as normal nav-link (CSS makes .btn transparent on mobile if used) -->
+                        <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
+                    @else
+                        <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="nav-item">
+                            <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                                @csrf
+                                <button type="submit" class="btn w-100 text-start">Logout</button>
+                            </form>
+                        </li>
+                    @endguest
+                </ul>
             </div>
         </div>
     </div>
 
     <div style="height:8px;background:#4CAF50;border-radius:0 0 8px 8px;"></div>
 </nav>
-
-<!-- Inline CSS: ensure toggler has no border and nav links visible in palette -->
-<style>
-    .navbar-toggler { outline: none; box-shadow: none; }
-    .navbar .nav-link { color: #F5F0E5 !important; text-decoration: none !important; }
-    .navbar .nav-link:hover { text-decoration: underline !important; text-decoration-thickness: 2px; text-underline-offset: 6px; }
-</style>

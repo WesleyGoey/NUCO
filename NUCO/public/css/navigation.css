@@ -1,0 +1,115 @@
+/* Toggler (hamburger) visual */
+.navbar-toggler {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+    border: none;
+    /* make tappable area larger for mobile */
+    width: 56px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    -webkit-tap-highlight-color: transparent;
+}
+.navbar-toggler .bi-list {
+    color: #F5F0E5;
+    font-size: 2rem; /* increased size */
+}
+
+/* Remove focus/active border or outline on hamburger toggler and collapse */
+.navbar-toggler,
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler:focus-visible {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Ensure icon itself has no focus ring */
+.navbar-toggler .bi-list,
+.navbar-toggler:focus .bi-list,
+.navbar-toggler:active .bi-list {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Also remove any outline/box-shadow from collapse children when opened */
+.navbar-collapse,
+#nucoNavbar,
+#nucoNavbar .navbar-nav,
+#nucoNavbar .nav-link,
+#nucoNavbar .btn {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Optional: remove browser default focus ring globally for toggler only */
+button.navbar-toggler::-moz-focus-inner { border: 0; }
+
+/* Default nav-link styling */
+.navbar .nav-link {
+    color: #F5F0E5 !important;
+    text-decoration: none !important;
+    font-weight: 400;
+    font-size: 1rem;
+}
+
+/* Hover underline effect */
+.navbar .nav-link:hover {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+}
+
+/* Desktop: keep horizontal layout */
+@media (min-width: 992px) {
+    .navbar-collapse .navbar-nav {
+        flex-direction: row;
+    }
+    .navbar-collapse .nav-link {
+        padding: 0;
+    }
+}
+
+/* Mobile: collapse becomes vertical stacked panel with same brown background, no border */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: #A4823B;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .navbar-collapse .navbar-nav {
+        flex-direction: column;
+        gap: 0.6rem;
+        padding: 0.75rem 1rem;
+        margin: 0;
+    }
+
+    .navbar-collapse .nav-link {
+        color: #F5F0E5 !important;
+        text-decoration: none !important;
+        font-weight: 400;
+        padding: 0.5rem 0;
+    }
+
+    /* Make login/logout look like ordinary nav items on mobile */
+    .navbar-collapse .btn {
+        background: transparent !important;
+        color: #F5F0E5 !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0.5rem 0;
+        text-align: left;
+        font-weight: 400;
+    }
+
+    /* keep brand area spacing when collapsed */
+    .navbar .navbar-brand { z-index: 2; }
+}
