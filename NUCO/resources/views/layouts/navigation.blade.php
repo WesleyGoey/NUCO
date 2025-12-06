@@ -6,81 +6,49 @@
                     <img src="{{ asset('images/logo.png') }}" alt="Logo {{ config('app.name', 'NUCO') }}" style="height:40px;width:40px;object-fit:contain;">
                 </span>
             </a>
-        </div>
 
-        <!-- RIGHT: icon-only hamburger -->
-        <div class="d-flex align-items-center ms-auto">
-            <button class="btn p-0 d-flex align-items-center justify-content-center" 
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#nucoNavbar"
-                    aria-controls="nucoNavbar"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                    style="background:transparent;border:none;color:#ffffff;width:44px;height:44px;">
-                <i class="bi-list" style="font-size:1.25rem;"></i>
+            {{-- Navbar toggler: visible only on small screens because of navbar-expand-lg --}}
+            <button class="navbar-toggler ms-auto border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#nucoNavbar" aria-controls="nucoNavbar" aria-expanded="false"
+                aria-label="Toggle navigation" style="background:transparent;">
+                <span class="navbar-toggler-icon"></span>
             </button>
         </div>
 
-        <!-- collapse placed in normal flow so it pushes content down when open -->
-        <div class="collapse w-100" id="nucoNavbar">
-            <div class="card shadow-sm w-100" style="border-radius:0 0 12px 12px; overflow:hidden; background:#A4823B; border: none;">
-                <div class="card-body p-3">
-                    <ul class="navbar-nav mb-2 mb-lg-0 d-flex flex-column" style="gap:0.4rem;">
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" href="{{ route('menu') }}" style="color:#F5F0E5; text-decoration:none;">Menu</a>
-                        </li>
+        {{-- Collapse: links will display inline on lg+ and collapse under toggler on small screens --}}
+        <div class="collapse navbar-collapse" id="nucoNavbar">
+            <div class="w-100 d-flex justify-content-end align-items-center" style="gap:2rem;">
+                <ul class="navbar-nav mb-2 mb-lg-0 d-flex flex-row align-items-center" style="gap:1.5rem;">
+                    <li class="nav-item">
+                        <a class="nav-link fs-5" href="{{ route('menu') }}" style="color:#F5F0E5; text-decoration:none;">Menu</a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link fs-5" href="{{ route('discounts') }}" style="color:#F5F0E5; text-decoration:none;">Discounts</a>
-                        </li>
+                    <li class="nav-item">
+                        <a class="nav-link fs-5" href="{{ route('discounts') }}" style="color:#F5F0E5; text-decoration:none;">Discounts</a>
+                    </li>
+                </ul>
 
-                        {{-- Guest: show only Login (no Register) --}}
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}" style="color:#F5F0E5; text-decoration:none;">Login</a>
-                            </li>
-                        @else
-                            {{-- Authenticated users: Dashboard + Logout --}}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('dashboard') }}" style="color:#F5F0E5; text-decoration:none;">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm w-100" style="background:#F5F0E5;color:#A4823B;border-radius:8px;border:none;">Logout</button>
-                                </form>
-                            </li>
-                        @endguest
-                    </ul>
+                <div class="d-flex align-items-center" style="gap:0.6rem;">
+                    @guest
+                        <a class="btn px-3 py-2" href="{{ route('login') }}"
+                            style="background:#F5F0E5;color:#A4823B;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06); text-decoration:none;">Login</a>
+                    @else
+                        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="btn btn-sm" style="background:#F5F0E5;color:#A4823B;border-radius:20px;border:none;">Logout</button>
+                        </form>
+                    @endguest
                 </div>
             </div>
         </div>
-     </div>
+    </div>
+
+    <div style="height:8px;background:#4CAF50;border-radius:0 0 8px 8px;"></div>
 </nav>
 
-<!-- Inline CSS: normalize nav-link font size & remove borders -->
+<!-- Inline CSS: ensure toggler has no border and nav links visible in palette -->
 <style>
-    /* Make all hamburger/collapse nav items use the same font size and normal weight */
-    .navbar .nav-link {
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        color: #F5F0E5 !important;
-        border: none !important;
-        padding-left: 0 !important;
-    }
-
-    /* Remove any default borders and outlines inside collapse card */
-    #nucoNavbar .card, #nucoNavbar .card-body {
-        border: none !important;
-        box-shadow: none !important;
-        background: #A4823B !important;
-    }
-
-    /* Hover underline only (no color change) */
-    .navbar .nav-link:hover {
-        text-decoration: underline !important;
-        text-decoration-thickness: 2px;
-        text-underline-offset: 6px;
-    }
+    .navbar-toggler { outline: none; box-shadow: none; }
+    .navbar .nav-link { color: #F5F0E5 !important; text-decoration: none !important; }
+    .navbar .nav-link:hover { text-decoration: underline !important; text-decoration-thickness: 2px; text-underline-offset: 6px; }
 </style>

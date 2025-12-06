@@ -53,15 +53,22 @@
 
              <div class="row g-3">
                  @forelse($products as $product)
-                     <div class="col-12 col-md-6">
+                     <!-- 3 items per row on md+ (col-md-4), 2 per row on sm, 1 per row on xs -->
+                     <div class="col-12 col-sm-6 col-md-4">
                          <div class="card h-100 shadow-sm border-0" style="border-radius:18px; overflow:hidden;">
-                             @if($product->image_path)
-                                 <img src="{{ asset('storage/' . $product->image_path) }}" class="card-img-top" alt="{{ $product->name }}" style="height:220px; object-fit:cover; border-radius:18px 18px 0 0; width:100%;">
-                             @else
-                                 <div class="d-flex align-items-center justify-content-center" style="height:220px; background:#F5F0E5; border-radius:18px 18px 0 0;">
-                                     <span class="fw-bold" style="font-size:28px;color:#000;">{{ strtoupper(substr($product->name,0,1)) }}</span>
-                                 </div>
-                             @endif
+                            <div style="border-radius:18px 18px 0 0; overflow:hidden;">
+                                <div class="ratio ratio-4x3">
+                                    @if($product->image_path)
+                                        <img src="{{ asset('storage/' . $product->image_path) }}"
+                                             alt="{{ $product->name }}"
+                                             style="width:100%; height:100%; object-fit:cover; display:block;">
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-center w-100 h-100" style="background:#F5F0E5;">
+                                            <span class="fw-bold" style="font-size:28px;color:#000;">{{ strtoupper(substr($product->name,0,1)) }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
 
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title fw-bold mb-1 text-truncate">{{ $product->name }}</h5>
@@ -75,20 +82,16 @@
                                         <div class="fw-bold" style="color:#A4823B;">
                                             Rp {{ number_format($product->price,0,',','.') }}
                                         </div>
-                                        <div class="small mt-1">
-                                            @if($product->is_available)
-                                                <span class="badge" style="background:#E6F9EE;color:#2D7A3B;border-radius:6px;padding:4px 8px;">Available</span>
-                                            @else
-                                                <span class="badge bg-secondary">Unavailable</span>
-                                            @endif
-                                        </div>
                                     </div>
 
                                     <div>
-                                        <a href="{{ route('menu') }}#product-{{ $product->id }}" class="btn btn-sm"
-                                           style="background:#A4823B;color:#F5F0E5;border-radius:8px;padding:6px 10px;">View</a>
+                                        @if($product->is_available)
+                                            <span class="badge" style="background:#E6F9EE;color:#2D7A3B;border-radius:6px;padding:6px 10px;">Available</span>
+                                        @else
+                                            <span class="badge bg-secondary">Unavailable</span>
+                                        @endif
                                     </div>
-                                </div>
+                                 </div>
                             </div>
                         </div>
                     </div>
