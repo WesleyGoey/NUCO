@@ -5,7 +5,6 @@
                 <span style="background:#F5F0E5;border-radius:50%;width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo {{ config('app.name', 'NUCO') }}" style="height:40px;width:40px;object-fit:contain;">
                 </span>
-                <span class="ms-2 fw-bold" style="color:#000000; font-size:1.05rem;">{{ config('app.name', 'NUCO') }}</span>
             </a>
 
             <button class="navbar-toggler ms-auto border-0" type="button" data-bs-toggle="collapse"
@@ -19,15 +18,14 @@
             <div class="w-100 d-flex justify-content-end align-items-center" style="gap:2rem;">
                 <ul class="navbar-nav mb-2 mb-lg-0 d-flex flex-row align-items-center" style="gap:1.5rem;">
                     <li class="nav-item">
-                        <a class="nav-link fw-bold fs-5" href="" style="color:#000000; text-decoration:none;">Menu</a>
+                        <a class="nav-link fw-bold fs-5" href="{{ route('menu') ?? url('/menu') }}" style="color:#000000; text-decoration:none;">Menu</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link fw-bold fs-5" href="" style="color:#000000; text-decoration:none;">Discounts</a>
+                        <a class="nav-link fw-bold fs-5" href="{{ route('discounts') ?? url('/discounts') }}" style="color:#000000; text-decoration:none;">Discounts</a>
                     </li>
                 </ul>
 
-                {{-- optional actions: keep minimal for design preview --}}
                 <div class="d-flex align-items-center" style="gap:0.6rem;">
                     @guest
                         <a class="btn fw-bold px-3 py-2" href="{{ route('login') }}"
@@ -45,3 +43,16 @@
 
     <div style="height:8px;background:#4CAF50;border-radius:0 0 8px 8px;"></div>
 </nav>
+
+<!-- Inline CSS: underline on hover only, keep text color -->
+<style>
+    /* No animation, underline only */
+    .nav-link { color: #000000 !important; text-decoration: none !important; }
+    .nav-link:hover,
+    .navbar .active {
+        text-decoration: underline !important;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 6px;
+        color: #000000 !important;
+    }
+</style>

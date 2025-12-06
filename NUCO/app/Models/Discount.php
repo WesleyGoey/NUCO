@@ -15,6 +15,7 @@ class Discount extends Model
         'value',
         'type',
         'min_order_amount',
+        'image_path'
     ];
 
     public function periods(): HasMany

@@ -16,6 +16,7 @@ class ProductSeeder extends Seeder
             Product::create([
                 'name' => ucfirst($faker->words(2, true)),
                 'category' => $faker->randomElement(['Food', 'Drink', 'Dessert']),
+                'description' => $faker->sentence(10),
                 'price' => $faker->numberBetween(10000, 100000),
                 'is_available' => $faker->boolean(85),
                 'image_path' => null,

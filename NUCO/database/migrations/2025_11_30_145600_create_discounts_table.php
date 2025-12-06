@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('value');
             $table->enum('type', ['percent', 'amount'])->default('percent');
             $table->integer('min_order_amount')->nullable();
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
     }

@@ -13,7 +13,6 @@
         <div style="width:100%; max-width:520px; border-radius:18px; padding:28px; background:#F5F0E5;">
             <div style="background:#ffffff; border-radius:12px; padding:36px; box-shadow:0 8px 24px rgba(0,0,0,0.06);">
 
-                {{-- logo square centered --}}
                 <div class="d-flex justify-content-center mb-3">
                     <div style="width:72px;height:72px;background:#F5F0E5;border-radius:12px;display:flex;align-items:center;justify-content:center;">
                         <img src="{{ asset('images/logo.png') }}" alt="Logo {{ config('app.name', 'NUCO') }}" style="width:48px;height:48px;object-fit:contain;">
@@ -22,7 +21,6 @@
 
                 <h2 class="text-center mb-2" style="color:#000000;font-weight:700;font-size:1.5rem;">Login</h2>
 
-                <!-- Session Status -->
                 <x-auth-session-status class="mb-3" :status="session('status')" />
 
                 <form method="POST" action="{{ route('login') }}">
