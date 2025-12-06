@@ -1,18 +1,20 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DiscountController;
-
+use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/auth.php';
+
 Route::get('/', function () {
-    return view('/guest/menu');
+    return redirect()->route('menu');
 })->name('home');
-Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
 
 Route::get('/products', [MenuController::class, 'index'])->name('menu');
+Route::get('/products/{product}', [MenuController::class, 'show'])->name('menu.show');
+
+Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -23,8 +25,3 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-
-// Route::view('/', 'home')->name('home');
-// Route::get('/products', [ProductController::class, 'index'])->name('products');
-// Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');

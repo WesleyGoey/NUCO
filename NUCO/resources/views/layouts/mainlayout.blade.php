@@ -27,11 +27,15 @@
         @includeIf('layouts.navigation')
     @endif
 
-    <main class="container my-4">
-        @yield('content')
-    </main>
+    <!-- Page Content -->
+<main class="container my-4">
+    @yield('content')
+</main>
 
-    @includeIf('layouts.footer')
+@includeIf('layouts.footer')
+
+<!-- Bootstrap JS bundle (needed for collapse) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
