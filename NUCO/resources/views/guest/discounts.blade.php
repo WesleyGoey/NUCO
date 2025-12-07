@@ -25,7 +25,6 @@
 
             <div class="card rounded-3 shadow-sm overflow-hidden border-0">
                 <div class="row g-0 align-items-stretch">
-                    {{-- LEFT: image (flush) --}}
                     @if($img)
                         <div class="col-12 col-md-4" style="min-height:160px; background-image:url('{{ $img }}'); background-size:cover; background-position:center;"></div>
                     @else
@@ -34,7 +33,6 @@
                         </div>
                     @endif
 
-                    {{-- RIGHT: content --}}
                     <div class="col-12 col-md-8">
                         <div class="p-4 d-flex flex-column h-100">
                             <div class="d-flex">
@@ -62,15 +60,12 @@
                                     @endif
                                 </div>
 
-                                {{-- VALUE BOX --}}
                                 <div class="d-flex align-items-start">
                                     <div class="bg-white border rounded-3 text-center p-3 ms-3" style="width:120px; border-color: rgba(164,130,59,0.12); box-shadow: 0 8px 20px rgba(0,0,0,0.04);">
                                         @if($isAmount)
-                                            {{-- two-line layout: big "Rp 5.000" + small "FLAT" --}}
                                             <div class="fw-bold" style="color:#A4823B; font-size:1.25rem;">{{ $valueNumber }}</div>
                                             <div class="small text-muted mt-1">FLAT</div>
                                         @else
-                                            {{-- percent: big value + small OFF --}}
                                             <div class="fw-bold" style="color:#A4823B; font-size:1.35rem;">{{ $discount->value }}%</div>
                                             <div class="small text-muted mt-1">OFF</div>
                                         @endif
@@ -78,7 +73,6 @@
                                 </div>
                             </div>
 
-                            {{-- RIBBON / LINE starts from edge of content (right column) --}}
                             <div class="mt-auto pt-3">
                                 <div class="rounded" style="height:10px; background: linear-gradient(90deg,#A4823B 0%,#D6BB7F 100%); box-shadow:0 6px 16px rgba(164,130,59,0.12);"></div>
                             </div>
@@ -92,7 +86,6 @@
     </div>
 </div>
 
-{{-- responsive tweak: make value box full-width below text on small screens --}}
 <style>
 @media (max-width: 767.98px) {
     .card .p-4 { padding: 1rem; }

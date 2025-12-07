@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="container-xl py-4">
-    {{-- CATEGORIES: full-width pills on top (visible on all sizes) --}}
     <div class="row mb-3">
         <div class="col-12">
             <div class="overflow-auto py-2" style="white-space:nowrap; -webkit-overflow-scrolling:touch;">
@@ -29,8 +28,6 @@
     </div>
 
     <div class="row g-3">
-        {{-- keep layout single-column products area (no sidebar) --}}
-        <!-- Right: products (image on top, details below) -->
         <section class="col-12">
              <div class="d-flex justify-content-between align-items-center mb-3">
                  <div>
@@ -38,7 +35,6 @@
                      <div class="text-muted small">Showing results — {{ is_object($products) || method_exists($products, 'count') ? $products->count() : count($products) }} items</div>
                  </div>
 
-                 {{-- SEARCH --}}
                  <div class="ms-2" style="min-width:240px;">
                      <form method="GET" action="{{ route('menu') }}" class="d-flex">
                          <input type="hidden" name="category" value="{{ request('category') }}">
@@ -53,7 +49,6 @@
 
              <div class="row g-3">
                  @forelse($products as $product)
-                     <!-- 3 items per row on md+ (col-md-4), 2 per row on sm, 1 per row on xs -->
                      <div class="col-12 col-sm-6 col-md-4">
                          <div class="card h-100 shadow-sm border-0" style="border-radius:18px; overflow:hidden;">
                             <div style="border-radius:18px 18px 0 0; overflow:hidden;">
