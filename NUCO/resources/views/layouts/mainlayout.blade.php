@@ -12,30 +12,36 @@
 
 <body>
     @php
-        $role = auth()->check() ? auth()->user()->role : 'guest';
+        $user = auth()->user();
     @endphp
 
-    @if ($role === 'owner')
-        @includeIf('layouts.navigation-owner')
-    @elseif ($role === 'waiter')
-        @includeIf('layouts.navigation-waiter')
-    @elseif ($role === 'chef')
-        @includeIf('layouts.navigation-chef')
-    @elseif ($role === 'reviewer')
-        @includeIf('layouts.navigation-reviewer')
+    @if ($user)
+        @if (method_exists($user, 'isOwner') && $user->isOwner())
+            @includeIf('layouts.navigation-owner')
+        @elseif (method_exists($user, 'isWaiter') && $user->isWaiter())
+            @includeIf('layouts.navigation-waiter')
+        @elseif (method_exists($user, 'isChef') && $user->isChef())
+            @includeIf('layouts.navigation-chef')
+        @elseif (method_exists($user, 'isCashier') && $user->isCashier())
+            @includeIf('layouts.navigation-cashier')
+        @elseif (method_exists($user, 'isReviewer') && $user->isReviewer())
+            @includeIf('layouts.navigation-reviewer')
+        @else
+            @includeIf('layouts.navigation')
+        @endif
     @else
         @includeIf('layouts.navigation')
     @endif
 
     <!-- Page Content -->
-<main class="container my-4">
-    @yield('content')
-</main>
+    <main class="container my-4">
+        @yield('content')
+    </main>
 
-@includeIf('layouts.footer')
+    @includeIf('layouts.footer')
 
-<!-- Bootstrap JS bundle (needed for collapse) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS bundle (needed for collapse) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

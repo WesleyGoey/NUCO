@@ -74,6 +74,11 @@ class User extends Authenticatable
         return $this->hasRole('chef');
     }
 
+    public function isCashier():bool
+    {
+        return $this->hasRole('cashier');
+    }
+
     public function isReviewer(): bool
     {
         return $this->hasRole('reviewer');
