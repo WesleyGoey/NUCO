@@ -58,7 +58,7 @@
                                              alt="{{ $product->name }}"
                                              style="width:100%; height:100%; object-fit:cover; display:block;">
                                     @else
-                                        <div class="d-flex align-items-center justify-content-center w-100 h-100" style="background:#F5F0E5;">
+                                        <div class="d-flex align-items-center justify-content-center w-100 h-100" style="background:#FFFFFF;">
                                             <span class="fw-bold" style="font-size:28px;color:#000;">{{ strtoupper(substr($product->name,0,1)) }}</span>
                                         </div>
                                     @endif

@@ -34,9 +34,13 @@
     @endif
 
     <!-- Page Content -->
-    <main class="container my-4">
-        @yield('content')
-    </main>
+    <div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw; background:#F5F0E5; min-height:100vh; padding:2.5rem 0;">
+        <div class="container">
+            <main class="my-4">
+                @yield('content')
+            </main>
+        </div>
+    </div>
 
     @includeIf('layouts.footer')
 

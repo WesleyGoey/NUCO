@@ -28,7 +28,7 @@
                     @if($img)
                         <div class="col-12 col-md-4" style="min-height:160px; background-image:url('{{ $img }}'); background-size:cover; background-position:center;"></div>
                     @else
-                        <div class="col-12 col-md-4 d-flex align-items-center justify-content-center" style="min-height:160px; background:#F5F0E5;">
+                        <div class="col-12 col-md-4 d-flex align-items-center justify-content-center" style="min-height:160px; background:#FFFFFF;">
                             <span class="fw-bold text-dark" style="font-size:48px;">{{ $initial }}</span>
                         </div>
                     @endif
