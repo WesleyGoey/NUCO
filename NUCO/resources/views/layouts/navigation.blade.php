@@ -16,11 +16,6 @@
                 <div class="d-flex align-items-center" style="gap:0.6rem;">
                     @guest
                         <a class="btn px-3 py-2" href="{{ route('login') }}" style="background:#F5F0E5;color:#A4823B;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-decoration:none;font-weight:400;">Login</a>
-                    @else
-                        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-                            @csrf
-                            <button type="submit" class="btn btn-sm" style="background:#F5F0E5;color:#A4823B;border-radius:20px;border:none;font-weight:400;">Logout</button>
-                        </form>
                     @endguest
                 </div>
             </div>
