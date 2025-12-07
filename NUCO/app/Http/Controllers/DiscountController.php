@@ -26,6 +26,6 @@ class DiscountController extends Controller
               return $d;
           });
 
-        return view('guest.discounts', compact('discounts'));
+        return view('discounts', compact('discounts'));
     }
 }

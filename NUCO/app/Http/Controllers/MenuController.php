@@ -47,6 +47,48 @@ class MenuController extends Controller
             $products = $productsQuery->orderBy('id', 'asc')->get();
         }
 
-        return view('guest.menu', compact('products', 'categories', 'totalProductsCount', 'search'));
+        return view('menu', compact('products', 'categories', 'totalProductsCount', 'search'));
+    }
+
+    /**
+     * Menu view for waiter after selecting a table (cart-enabled).
+     */
+    public function cart(Request $request): View
+    {
+        // categories: distinct category + total count (no availability filter)
+        $categories = Product::selectRaw('category, count(*) as products_count')
+            ->groupBy('category')
+            ->get()
+            ->map(function ($c) {
+                return (object) [
+                    'id' => $c->category,
+                    'name' => $c->category,
+                    'products_count' => $c->products_count,
+                ];
+            });
+
+        $totalProductsCount = Product::count();
+
+        $search = $request->query('search');
+
+        // build base query (apply category filter if present)
+        $productsQuery = Product::query();
+
+        if ($request->filled('category')) {
+            $productsQuery->where('category', $request->query('category'));
+        }
+
+        if (!empty($search)) {
+            // search only by product name, scoped to selected category if any
+            $products = $productsQuery->where('name', 'like', "%{$search}%")
+                ->orderBy('id', 'asc')
+                ->paginate(3)
+                ->withQueryString();
+        } else {
+            // return Eloquent models collection for listing (no pagination)
+            $products = $productsQuery->orderBy('id', 'asc')->get();
+        }
+
+        return view('waiter.cart', compact('products', 'categories', 'totalProductsCount', 'search'));
     }
 }

@@ -17,17 +17,16 @@
 
                 <div class="d-flex align-items-center" style="gap:0.6rem;">
                     @auth
-                        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-                            @csrf
-                            <button type="submit" class="btn px-3 py-2"
-                                style="background:#F5F0E5;color:#A4823B;border-radius:20px;border:none;font-weight:400;">
-                                Logout
-                            </button>
-                        </form>
+                        {{-- Desktop: person icon linking to profile --}}
+                        <a href="{{ route('profile') }}" class="d-inline-flex align-items-center justify-content-center"
+                           style="width:44px;height:44px;border-radius:50%;overflow:hidden;text-decoration:none;background:#F5F0E5;color:#A4823B;">
+                            <i class="bi bi-person" style="font-size:1.25rem; color:#A4823B;"></i>
+                        </a>
                     @endauth
                  </div>
              </div>
  
+             <!-- MOBILE TOGGLER (right) -->
              <button class="navbar-toggler d-lg-none border-0 ms-auto" type="button" data-bs-toggle="collapse"
                  data-bs-target="#nucoNavbarWaiter" aria-controls="nucoNavbarWaiter" aria-expanded="false"
                  aria-label="Toggle navigation">
@@ -35,6 +34,7 @@
              </button>
          </div>
  
+         <!-- COLLAPSE: mobile vertical panel (pushes content) -->
          <div class="collapse navbar-collapse" id="nucoNavbarWaiter">
              <div class="w-100">
                  <ul class="navbar-nav d-lg-none flex-column" style="gap:0.6rem; padding:0.75rem 1rem; margin:0;">
@@ -44,13 +44,8 @@
                      <li class="nav-item"><a class="nav-link" href="{{ route('waiter.orders') }}">Orders</a></li>
  
                     @auth
-
-                        <li class="nav-item">
-                            <form method="POST" action="{{ route('logout') }}" style="margin:0;">
-                                @csrf
-                                <button type="submit" class="btn w-100 text-start">Logout</button>
-                            </form>
-                        </li>
+                        {{-- mobile: only Profile link; logout lives in profile page --}}
+                        <li class="nav-item"><a class="nav-link" href="{{ route('profile') }}">Profile</a></li>
                     @endauth
                  </ul>
              </div>
