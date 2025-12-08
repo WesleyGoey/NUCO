@@ -19,8 +19,11 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
     Route::post('/tables/select', [TableController::class, 'select'])->name('tables.select');
 
-    // menu-cart route for waiter flow (cart-enabled)
-    Route::get('/cart', [MenuController::class, 'cart'])->name('cart');
+    // waiter cart handled by CartController
+    Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
     // cart add (session-based) for waiter flow
     // Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // users first (other tables reference users)
             UserSeeder::class,
+            CategorySeeder::class,
 
             // basic reference data
             RestaurantTableSeeder::class,

@@ -39,6 +39,7 @@
                                 min-height:150px;
                                 transition: transform .12s ease, box-shadow .12s ease;
                                 {{ $isSelected ? 'transform: translateY(-6px); box-shadow: 0 12px 34px rgba(0,0,0,0.14);' : 'box-shadow: 0 6px 18px rgba(0,0,0,0.06);' }}
+                                {{ $isAvailable ? 'background:#FFFFFF;' : 'background:#FFF3E6; border:1px solid rgba(196,122,26,0.12);' }}
                              ">
                             <div class="mb-2">
                                 <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:#F5F0E5;color:#A4823B;font-weight:700;">

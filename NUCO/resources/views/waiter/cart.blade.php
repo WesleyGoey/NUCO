@@ -1,8 +1,18 @@
-@extends('layouts.mainlayout')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Menu — Order (Cart) - {{ config('app.name', 'NUCO') }}</title>
 
-@section('title', 'Menu — Order (Cart)')
+    <!-- Bootstrap / Icons / App CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('css/navigation.css') }}">
+</head>
+<body style="background:#F5F0E5; min-height:100vh; margin:0;">
 
-@section('content')
 @php
     $selectedTable = session('selected_table') ?? null;
     $cart = session('waiter_cart', []);
@@ -12,9 +22,29 @@
 
 <div class="container-xl py-3"><!-- reduced vertical padding -->
 
-    {{-- Categories filter: tampil di atas Menu + Orders --}}
+    {{-- Categories filter --}}
     <div class="row mb-2">
         <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h4 class="m-0 fw-bold">Menu</h4>
+                    <div class="text-muted small">Showing results — {{ is_object($products) || method_exists($products, 'count') ? $products->count() : count($products) }} items</div>
+                </div>
+
+                <div class="ms-3" style="min-width:220px; max-width:420px;">
+                    <form method="GET" action="{{ route('waiter.cart') }}" class="d-flex">
+                        <input type="hidden" name="category" value="{{ request('category') }}">
+                        <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
+                               placeholder="Search menu..."
+                               style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;" />
+                        <button type="submit" class="btn btn-sm ms-2"
+                                style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:600;">
+                            Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div class="overflow-auto py-2" style="white-space:nowrap; -webkit-overflow-scrolling:touch;">
                 <a href="{{ route('waiter.cart', ['search' => request('search')]) }}"
                    class="btn btn-sm me-2 mb-2"
@@ -39,29 +69,9 @@
     </div>
 
     <div class="row g-3 align-items-stretch"><!-- parent row: stretch columns to same height -->
-        <!-- LEFT: Menu (title) + Search + Products (2/3) -->
+        <!-- LEFT: Menu -->
         <div class="col-12 col-lg-8">
             <div class="d-flex flex-column h-100">
-                <!-- header: Menu title + small meta + search aligned horizontally -->
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <h4 class="m-0 fw-bold">Menu</h4>
-                        <div class="text-muted small">Showing results — {{ is_object($products) || method_exists($products, 'count') ? $products->count() : count($products) }} items</div>
-                    </div>
-
-                    <div class="ms-3" style="min-width:220px; max-width:420px;">
-                        <form method="GET" action="{{ route('waiter.cart') }}" class="d-flex">
-                            <input type="hidden" name="category" value="{{ request('category') }}">
-                            <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
-                                   placeholder="Search menu..."
-                                   style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;" />
-                            <button type="submit" class="btn btn-sm ms-2"
-                                    style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;">Search</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- products grid: reduce vertical gaps (g-2) and let it grow -->
                 <div class="row g-2 mt-1">
                     @forelse($products as $product)
                         <div class="col-12 col-sm-6 col-md-4">
@@ -83,12 +93,14 @@
                                     @if(!empty($product->description))
                                         <p class="card-text text-muted small mb-2" style="line-height:1.3;">{{ $product->description }}</p>
                                     @endif
+
                                     <div class="mt-auto d-flex justify-content-between align-items-center">
                                         <div>
                                             <div class="fw-bold" style="color:#A4823B;">
                                                 Rp {{ number_format($product->price,0,',','.') }}
                                             </div>
                                         </div>
+
                                         <div>
                                             @php
                                                 $canAdd = $selectedTable && auth()->check() && method_exists(auth()->user(), 'isWaiter') && auth()->user()->isWaiter();
@@ -124,7 +136,7 @@
             </div>
         </div>
 
-        <!-- RIGHT: Orders (1/3) - card stretches to same height as left column -->
+        <!-- RIGHT: Orders -->
         <div class="col-12 col-lg-4 d-flex">
             <div class="card w-100 shadow-sm border-0 d-flex flex-column h-100">
                 <div class="card-body d-flex flex-column">
@@ -169,4 +181,8 @@
         </div>
     </div>
 </div>
-@endsection
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

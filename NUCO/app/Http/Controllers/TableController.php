@@ -12,7 +12,9 @@ class TableController extends Controller
     {
         $tables = RestaurantTable::orderByRaw('CAST(table_number AS UNSIGNED)')->orderBy('table_number')->get();
 
-        return view('waiter.tables', compact('tables'));
+        // pass selected table id (if any) so view can mark selected table
+        $selectedId = session('selected_table.id') ?? null;
+        return view('waiter.tables', compact('tables', 'selectedId'));
     }
 
     /**
@@ -31,7 +33,7 @@ class TableController extends Controller
             ]]);
         }
 
-        // redirect to the menu-cart page (waiter flow)
-        return redirect()->route('waiter.menu.cart');
+        // redirect to the waiter cart page so waiter can add items
+        return redirect()->route('waiter.cart');
     }
 }
