@@ -13,13 +13,13 @@
                     </div>
 
                     <div class="p-4" style="background:transparent;">
-                        {{-- Centered avatar + username (removed "Logged as") --}}
+                        {{-- Centered avatar + username --}}
                         <div class="text-center mb-4">
                             <div class="mx-auto" style="width:88px;height:88px;border-radius:12px;background:#F5F0E5;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.04);">
                                 <i class="bi bi-person-fill" style="font-size:32px;color:#A4823B"></i>
                             </div>
                             <div class="mt-3 fw-semibold" style="color:#4b3028;font-size:1rem;">
-                                {{ $user->username }}
+                                {{ $user->username ?? $user->email }}
                             </div>
                         </div>
 

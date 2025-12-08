@@ -48,8 +48,8 @@
         </div>
 
         <div class="text-center my-3">
-            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#changePasswordModal"
-               class="fw-semibold" style="color:#A4823B;text-decoration:underline;">Change password</a>
+            <a href="{{ route('password.change') }}" class="fw-semibold"
+               style="color:#A4823B;text-decoration:underline;">Change password</a>
         </div>
 
         <div class="d-flex justify-content-center mt-2">
