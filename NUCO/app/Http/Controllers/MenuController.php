@@ -3,92 +3,81 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Schema;
 
 class MenuController extends Controller
 {
-    /**
-     * Display guest menu / product listing with search.
-     */
     public function index(Request $request): View
     {
-        // categories: distinct category + total count (no availability filter)
-        $categories = Product::selectRaw('category, count(*) as products_count')
-            ->groupBy('category')
-            ->get()
-            ->map(function ($c) {
-                return (object) [
-                    'id' => $c->category,
-                    'name' => $c->category,
-                    'products_count' => $c->products_count,
-                ];
-            });
+        $search = $request->query('search', '');
+        $selectedCategory = $request->query('category', '');
 
+        $hasCategoryId = Schema::hasColumn('products', 'category_id');
         $totalProductsCount = Product::count();
 
-        $search = $request->query('search');
+        if ($hasCategoryId) {
+            // Load semua kategori (untuk tombol filter)
+            $allCategories = Category::orderBy('id')->get();
 
-        // build base query (apply category filter if present)
-        $productsQuery = Product::query();
+            // Map kategori dengan produk yang sesuai filter
+            $categories = $allCategories->map(function ($cat) use ($search, $selectedCategory) {
+                // Query produk untuk kategori ini
+                $query = $cat->products()->orderBy('id', 'asc');
+                
+                // Apply search filter
+                if (!empty($search)) {
+                    $query->where('name', 'like', "%{$search}%");
+                }
 
-        if ($request->filled('category')) {
-            $productsQuery->where('category', $request->query('category'));
-        }
-
-        if (!empty($search)) {
-            // search only by product name, scoped to selected category if any
-            $products = $productsQuery->where('name', 'like', "%{$search}%")
-                ->orderBy('id', 'asc')
-                ->paginate(3)
-                ->withQueryString();
-        } else {
-            // return Eloquent models collection for listing (no pagination)
-            $products = $productsQuery->orderBy('id', 'asc')->get();
-        }
-
-        return view('menu', compact('products', 'categories', 'totalProductsCount', 'search'));
-    }
-
-    /**
-     * Menu view for waiter after selecting a table (cart-enabled).
-     */
-    public function cart(Request $request): View
-    {
-        // categories: distinct category + total count (no availability filter)
-        $categories = Product::selectRaw('category, count(*) as products_count')
-            ->groupBy('category')
-            ->get()
-            ->map(function ($c) {
-                return (object) [
-                    'id' => $c->category,
-                    'name' => $c->category,
-                    'products_count' => $c->products_count,
-                ];
+                // Ambil produk
+                $cat->products = $query->get();
+                
+                // Tandai kategori aktif
+                $cat->isActive = !empty($selectedCategory) && (string)$selectedCategory === (string)$cat->id;
+                $cat->count = $cat->products->count();
+                
+                return $cat;
             });
 
-        $totalProductsCount = Product::count();
-
-        $search = $request->query('search');
-
-        // build base query (apply category filter if present)
-        $productsQuery = Product::query();
-
-        if ($request->filled('category')) {
-            $productsQuery->where('category', $request->query('category'));
-        }
-
-        if (!empty($search)) {
-            // search only by product name, scoped to selected category if any
-            $products = $productsQuery->where('name', 'like', "%{$search}%")
-                ->orderBy('id', 'asc')
-                ->paginate(3)
-                ->withQueryString();
+            // Jika ada filter kategori, hanya tampilkan kategori yang dipilih
+            if (!empty($selectedCategory)) {
+                $categories = $categories->filter(function($cat) use ($selectedCategory) {
+                    return (string)$cat->id === (string)$selectedCategory;
+                });
+            }
         } else {
-            // return Eloquent models collection for listing (no pagination)
-            $products = $productsQuery->orderBy('id', 'asc')->get();
+            // Fallback untuk skema lama
+            $cats = Product::selectRaw('category, min(id) as first_id')
+                ->groupBy('category')
+                ->orderBy('first_id')
+                ->get();
+
+            $categories = $cats->map(function ($c) use ($search, $selectedCategory) {
+                $query = Product::where('category', $c->category)->orderBy('id','asc');
+                
+                if (!empty($search)) {
+                    $query->where('name', 'like', "%{$search}%");
+                }
+                
+                $c->products = $query->get();
+                $c->id = $c->category;
+                $c->name = $c->category;
+                $c->count = $c->products->count();
+                $c->isActive = !empty($selectedCategory) && (string)$selectedCategory === (string)$c->id;
+                
+                return $c;
+            });
+
+            if (!empty($selectedCategory)) {
+                $categories = $categories->filter(function($c) use ($selectedCategory) {
+                    return (string)$c->id === (string)$selectedCategory;
+                });
+            }
         }
 
-        return view('waiter.cart', compact('products', 'categories', 'totalProductsCount', 'search'));
+        return view('menu', compact('categories', 'totalProductsCount', 'search', 'selectedCategory'));
     }
 }

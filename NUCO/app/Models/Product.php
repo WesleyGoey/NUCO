@@ -14,11 +14,17 @@ class Product extends Model
     protected $fillable = [
         'name',
         'category',
+        'category_id',
         'description',
         'price',
         'is_available',
         'image_path',
     ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 
     public function ingredients(): BelongsToMany
     {
