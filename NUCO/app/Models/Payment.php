@@ -12,10 +12,14 @@ class Payment extends Model
 
     protected $fillable = [
         'order_id',
-        'cashier_id',
+        'user_id',
         'amount',
         'method',
         'payment_time',
+    ];
+
+    protected $casts = [
+        'payment_time' => 'datetime',
     ];
 
     public function order(): BelongsTo
@@ -23,8 +27,14 @@ class Payment extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function cashier(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Alias for cashier (same as user)
+    public function cashier(): BelongsTo
+    {
+        return $this->user();
     }
 }

@@ -34,10 +34,16 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     })->name('orders');
 });
 
+
 Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
     Route::get('/reviews', function () {
         return view('reviewer.reviews');
     })->name('reviews');
+
+Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->group(function () {
+    Route::get('/checkout', [App\Http\Controllers\CashierController::class, 'checkout'])->name('checkout');
+    Route::post('/payment/process', [App\Http\Controllers\CashierController::class, 'processPayment'])->name('payment.process');
+    Route::get('/order-history', [App\Http\Controllers\CashierController::class, 'orderHistory'])->name('order.history');
 });
 
 Route::get('/dashboard', function () {
