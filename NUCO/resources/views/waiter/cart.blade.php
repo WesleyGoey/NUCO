@@ -21,6 +21,20 @@
 @endphp
 
 <div class="container-xl py-4">
+    {{-- Alert Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     {{-- Header & Search --}}
     <div class="row mb-3">
         <div class="col-12">
@@ -177,24 +191,86 @@
                         Table {{ $selectedTable['table_number'] ?? '-' }} • {{ $cartCount }} items
                     </div>
 
-                    <div class="overflow-auto" style="max-height:400px;">
+                    <div class="overflow-auto" style="max-height:500px;">
                         @if(empty($cart))
                             <div class="text-center text-muted py-4">
                                 <i class="bi bi-cart" style="font-size:2rem;"></i>
                                 <p class="mt-2 small">Cart is empty</p>
                             </div>
                         @else
-                            <ul class="list-group mb-3">
+                            <div class="list-group mb-3">
                                 @foreach($cart as $item)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="fw-bold">{{ $item['name'] }}</div>
-                                            <div class="small text-muted">x{{ $item['quantity'] }}</div>
+                                    <div class="list-group-item border-0 p-3 mb-2" style="background:#F9F9F9; border-radius:8px;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="flex-grow-1 me-2">
+                                                <div class="fw-bold">{{ $item['name'] }}</div>
+                                                <div class="small text-muted">Rp {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold" style="color:#A4823B;">
+                                                    Rp {{ number_format($item['subtotal'] ?? 0, 0, ',', '.') }}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>Rp {{ number_format($item['subtotal'] ?? 0, 0, ',', '.') }}</div>
-                                    </li>
+
+                                        {{-- Notes Input --}}
+                                        <div class="mb-2">
+                                            <form method="POST" action="{{ route('waiter.cart.update-note') }}" class="d-flex gap-2">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                <input type="text" name="note" 
+                                                       value="{{ $item['note'] ?? '' }}" 
+                                                       class="form-control form-control-sm" 
+                                                       placeholder="Add note (e.g., no spicy)..."
+                                                       style="border-radius:6px; font-size:0.85rem;">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" 
+                                                        style="border-radius:6px; padding:4px 8px;">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            {{-- Quantity Controls --}}
+                                            <div class="d-flex align-items-center gap-2">
+                                                <form method="POST" action="{{ route('waiter.cart.update') }}" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                    <input type="hidden" name="quantity" value="{{ max(1, ($item['quantity'] ?? 1) - 1) }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" 
+                                                            style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                            {{ ($item['quantity'] ?? 1) <= 1 ? 'disabled' : '' }}>
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                </form>
+
+                                                <span class="fw-bold" style="min-width:30px; text-align:center;">{{ $item['quantity'] ?? 1 }}</span>
+
+                                                <form method="POST" action="{{ route('waiter.cart.update') }}" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                    <input type="hidden" name="quantity" value="{{ ($item['quantity'] ?? 1) + 1 }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" 
+                                                            style="width:30px; height:30px; padding:0; border-radius:6px;">
+                                                        <i class="bi bi-plus"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            {{-- Delete Button --}}
+                                            <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                        onclick="return confirm('Remove this item from cart?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 @endforeach
-                            </ul>
+                            </div>
 
                             <div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top">
                                 <div class="fw-bold">Total</div>
@@ -202,22 +278,36 @@
                                     Rp {{ number_format($cartTotal, 0, ',', '.') }}
                                 </div>
                             </div>
+                        @endif
 
-                            <div class="d-grid gap-2">
+                        {{-- Action Buttons - Always visible --}}
+                        <div class="d-grid gap-2">
+                            @if(!empty($cart))
                                 <button class="btn" disabled 
                                         style="background:#A4823B;color:#F5F0E5;border-radius:8px;padding:10px;font-weight:700;">
                                     Checkout (WIP)
                                 </button>
-                                <form method="POST" action="{{ route('waiter.cart.add') }}">
+                                
+                                <form method="POST" action="{{ route('waiter.cart.clear') }}">
                                     @csrf
-                                    <input type="hidden" name="clear" value="1">
                                     <button type="submit" class="btn btn-outline-secondary w-100" 
-                                            style="border-radius:8px;padding:8px;">
-                                        Clear Cart
+                                            style="border-radius:8px;padding:8px;"
+                                            onclick="return confirm('Clear all items from cart?')">
+                                        <i class="bi bi-trash3 me-1"></i> Clear Cart
                                     </button>
                                 </form>
-                            </div>
-                        @endif
+                            @endif
+
+                            {{-- Cancel Order - Always visible --}}
+                            <form method="POST" action="{{ route('waiter.tables.cancel') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-danger w-100" 
+                                        style="border-radius:8px;padding:8px;"
+                                        onclick="return confirm('Cancel order and return to table selection? {{ !empty($cart) ? 'Cart will be cleared and table will be released.' : 'Table will be released.' }}')">
+                                    <i class="bi bi-x-circle me-1"></i> Cancel Order
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

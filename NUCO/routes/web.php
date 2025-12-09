@@ -18,15 +18,14 @@ Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts'
 Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group(function () {
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
     Route::post('/tables/select', [TableController::class, 'select'])->name('tables.select');
+    Route::post('/tables/cancel', [TableController::class, 'cancel'])->name('tables.cancel');
 
-    // waiter cart handled by CartController
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/update-note', [CartController::class, 'updateNote'])->name('cart.update-note');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-
-    // cart add (session-based) for waiter flow
-    // Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 
     Route::get('/menu', [MenuController::class, 'index'])->name('menu');
     Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
