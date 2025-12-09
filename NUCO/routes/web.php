@@ -5,6 +5,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 
@@ -35,9 +36,9 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
 });
 
 Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
-    Route::get('/reviews', function () {
-        return view('reviewer.reviews');
-    })->name('reviews');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/thankyou', [ReviewController::class, 'thankyou'])->name('thankyou');
 });
 
 Route::get('/dashboard', function () {

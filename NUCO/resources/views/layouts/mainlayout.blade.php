@@ -13,6 +13,7 @@
 <body>
     @php
         $user = auth()->user();
+        $isReviewer = $user && method_exists($user, 'isReviewer') && $user->isReviewer();
     @endphp
 
     @if ($user)
@@ -24,7 +25,7 @@
             @includeIf('layouts.navigation-chef')
         @elseif (method_exists($user, 'isCashier') && $user->isCashier())
             @includeIf('layouts.navigation-cashier')
-        @elseif (method_exists($user, 'isReviewer') && $user->isReviewer())
+        @elseif ($isReviewer)
             @includeIf('layouts.navigation-reviewer')
         @else
             @includeIf('layouts.navigation')
@@ -42,7 +43,9 @@
         </div>
     </div>
 
-   @includeIf('layouts.footer')
+   @unless($isReviewer)
+       @includeIf('layouts.footer')
+   @endunless
 
     <!-- Bootstrap JS bundle (needed for collapse) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
