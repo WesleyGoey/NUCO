@@ -65,66 +65,77 @@
    {{-- Products grouped by category --}}
    <div class="row g-3">
         <section class="col-12">
-            @forelse($categories as $category)
-                @if(empty($category->products) || $category->products->isEmpty()) 
-                    @continue 
-                @endif
+            @php
+                // total products that will be rendered (sum of product counts per category)
+                $totalDisplayed = $categories->sum(function($c) {
+                    return isset($c->products) ? $c->products->count() : 0;
+                });
+            @endphp
 
-                <div class="mb-4">
-                    <h5 class="fw-bold mb-3" style="color:#4b3028;">{{ $category->name }}</h5>
-                    <div class="row g-3">
-                        @foreach($category->products as $product)
-                            <div class="col-12 col-sm-6 col-md-4">
-                                {{-- Product Card (inline) --}}
-                                <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
-                                    {{-- Image placeholder --}}
-                                    <div style="border-radius:12px 12px 0 0; overflow:hidden;">
-                                        <div class="ratio ratio-4x3">
-                                            @if(!empty($product->image_path))
-                                                <img src="{{ asset('storage/' . $product->image_path) }}" 
-                                                     alt="{{ $product->name }}" 
-                                                     style="width:100%; height:100%; object-fit:cover; display:block;">
-                                            @else
-                                                {{-- Empty placeholder untuk gambar --}}
-                                                <div class="d-flex align-items-center justify-content-center w-100 h-100"
-                                                     style="background:#FFFFFF; border:1px dashed rgba(0,0,0,0.06);">
-                                                    {{-- Area kosong untuk gambar --}}
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
+            @if ($totalDisplayed === 0)
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox" style="font-size:3rem;"></i>
+                    <p class="mt-2">
+                        @if(!empty($search))
+                            No results found for "{{ e($search) }}"
+                        @else
+                            No products available
+                        @endif
+                    </p>
+                </div>
+            @else
+                @foreach($categories as $category)
+                    @if(empty($category->products) || $category->products->isEmpty())
+                        @continue
+                    @endif
 
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title fw-bold mb-1 text-truncate">{{ $product->name }}</h5>
-                                        @if(!empty($product->description))
-                                            <p class="card-text text-muted small mb-2" style="line-height:1.3;">{{ $product->description }}</p>
-                                        @endif
-
-                                        <div class="mt-auto d-flex justify-content-between align-items-center">
-                                            <div class="fw-bold" style="color:#A4823B;">
-                                                Rp {{ number_format($product->price, 0, ',', '.') }}
-                                            </div>
-
-                                            <div>
-                                                @if(!empty($product->is_available) && $product->is_available)
-                                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;border-radius:6px;padding:6px 10px;">Available</span>
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3" style="color:#4b3028;">{{ $category->name }}</h5>
+                        <div class="row g-3">
+                            @foreach($category->products as $product)
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    {{-- Product Card (inline) --}}
+                                    <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
+                                        <div style="border-radius:12px 12px 0 0; overflow:hidden;">
+                                            <div class="ratio ratio-4x3">
+                                                @if(!empty($product->image_path))
+                                                    <img src="{{ asset('storage/' . $product->image_path) }}" 
+                                                         alt="{{ $product->name }}" 
+                                                         style="width:100%; height:100%; object-fit:cover; display:block;">
                                                 @else
-                                                    <span class="badge bg-secondary">Unavailable</span>
+                                                    <div class="d-flex align-items-center justify-content-center w-100 h-100"
+                                                         style="background:#FFFFFF; border:1px dashed rgba(0,0,0,0.06);"></div>
                                                 @endif
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title fw-bold mb-1 text-truncate">{{ $product->name }}</h5>
+                                            @if(!empty($product->description))
+                                                <p class="card-text text-muted small mb-2" style="line-height:1.3;">{{ $product->description }}</p>
+                                            @endif
+
+                                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                                <div class="fw-bold" style="color:#A4823B;">
+                                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                                </div>
+
+                                                <div>
+                                                    @if(!empty($product->is_available) && $product->is_available)
+                                                        <span class="badge" style="background:#E6F9EE;color:#2D7A3B;border-radius:6px;padding:6px 10px;">Available</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">Unavailable</span>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
-                </div>
-            @empty
-                <div class="text-center text-muted py-5">
-                    <i class="bi bi-inbox" style="font-size:3rem;"></i>
-                    <p class="mt-2">No products found</p>
-                </div>
-            @endforelse
+                @endforeach
+            @endif
         </section>
     </div>
 </div>

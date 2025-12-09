@@ -35,6 +35,12 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     })->name('orders');
 });
 
+Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
+    Route::get('/reviews', function () {
+        return view('reviewer.reviews');
+    })->name('reviews');
+});
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

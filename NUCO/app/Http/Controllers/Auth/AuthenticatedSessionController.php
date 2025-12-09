@@ -28,10 +28,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // redirect by role: waiter -> waiter.tables, otherwise default dashboard
+        // redirect by role: waiter -> waiter.tables, reviewer -> reviews, otherwise default dashboard
         $user = $request->user();
         if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
             return redirect()->intended(route('waiter.tables', absolute: false));
+        }
+
+        if ($user && method_exists($user, 'isReviewer') && $user->isReviewer()) {
+            // route name added in web.php (see changes)
+            return redirect()->intended(route('reviewer.reviews', absolute: false));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));
