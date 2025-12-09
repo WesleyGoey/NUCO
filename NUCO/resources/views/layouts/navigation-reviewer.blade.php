@@ -13,7 +13,7 @@
                 @auth
                     <a href="{{ route('profile') }}" aria-label="Profile" title="Profile"
                        style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#F5F0E5;color:#A4823B;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-                        <i class="bi bi-person-fill" style="font-size:1.25rem;color:#A4823B;"></i>
+                        <i class="bi bi-person-circle" style="font-size:1.5rem;color:#A4823B;"></i>
                     </a>
                 @else
                     <a href="{{ route('login') }}" aria-label="Login" title="Login"

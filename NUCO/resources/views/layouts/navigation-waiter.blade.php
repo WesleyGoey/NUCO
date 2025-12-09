@@ -20,7 +20,7 @@
                         {{-- Desktop: person icon linking to profile --}}
                         <a href="{{ route('profile') }}" class="d-inline-flex align-items-center justify-content-center"
                            style="width:44px;height:44px;border-radius:50%;overflow:hidden;text-decoration:none;background:#F5F0E5;color:#A4823B;">
-                            <i class="bi bi-person" style="font-size:1.25rem; color:#A4823B;"></i>
+                            <i class="bi bi-person-circle" style="font-size:1.5rem; color:#A4823B;"></i>
                         </a>
                     @endauth
                  </div>
