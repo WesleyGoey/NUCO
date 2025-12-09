@@ -23,52 +23,40 @@
                         We appreciate you taking the time to share your experience with us.
                     </p>
                     
-                    {{-- Decorative Stars --}}
-                    <div class="mb-4">
-                        @for($i = 1; $i <= 5; $i++)
-                            <i class="bi bi-star-fill" style="font-size:1.5rem; color:#FFD700; margin:0 4px;"></i>
-                        @endfor
-                    </div>
+                    {{-- Countdown Timer --}}
+                    <p class="text-muted mb-4" style="font-size:0.95rem;">
+                        Redirecting in <span id="countdown" class="fw-bold" style="color:#A4823B;">5</span> seconds...
+                    </p>
                     
-                    {{-- Action Buttons --}}
-                    <div class="d-grid gap-2">
+                    {{-- Submit Another Review Button --}}
+                    <div class="d-grid">
                         <a href="{{ route('reviewer.reviews') }}" class="btn btn-lg" 
                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;box-shadow:0 4px 12px rgba(164,130,59,0.2);">
-                            <i class="bi bi-arrow-left-circle me-2"></i> Submit Another Review
-                        </a>
-                        
-                        <a href="{{ route('profile') }}" class="btn btn-lg btn-outline-secondary" 
-                           style="border:2px solid #E9E6E2;border-radius:12px;padding:14px;font-weight:600;color:#6b6b6b;">
-                            <i class="bi bi-person me-2"></i> Go to Profile
+                            <i class="bi bi-arrow-left-circle me-2"></i> Submit Another Review Now
                         </a>
                     </div>
-
-                    {{-- Optional: Logout Button --}}
-                    <div class="mt-4">
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-link text-muted" 
-                                    style="text-decoration:none; font-size:0.9rem;">
-                                <i class="bi bi-box-arrow-right me-1"></i> Logout
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Optional: Fun Fact or Quote --}}
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mt-4" style="background:linear-gradient(135deg, #FFF8E6 0%, #FFECB3 100%);">
-                <div class="card-body p-4 text-center">
-                    <div class="mb-2">
-                        <i class="bi bi-lightbulb-fill" style="font-size:2rem; color:#F57C00;"></i>
-                    </div>
-                    <p class="fw-bold mb-1" style="color:#4b3028; font-size:1rem;">Did you know?</p>
-                    <p class="text-muted small mb-0" style="line-height:1.5;">
-                        Your feedback helps us improve our service and create better experiences for all our customers. Thank you for being part of our journey!
-                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let seconds = 5;
+    const countdownElement = document.getElementById('countdown');
+    
+    // Update countdown every second
+    const interval = setInterval(function() {
+        seconds--;
+        countdownElement.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(interval);
+            // Redirect to reviews page
+            window.location.href = "{{ route('reviewer.reviews') }}";
+        }
+    }, 1000);
+});
+</script>
 @endsection
