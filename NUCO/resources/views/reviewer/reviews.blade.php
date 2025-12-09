@@ -15,7 +15,6 @@
                     <form method="POST" action="{{ route('reviewer.reviews.store') }}" id="reviewForm">
                         @csrf
 
-                        {{-- Star Rating --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold text-center d-block mb-3" style="color:#4b3028; font-size:1rem;">
                                 How was your experience?
@@ -39,7 +38,6 @@
                             <div id="ratingText" class="text-center mt-2 fw-bold" style="color:#A4823B; font-size:1rem; min-height:26px;"></div>
                         </div>
 
-                        {{-- Comment --}}
                         <div class="mb-3">
                             <label for="comment" class="form-label fw-bold" style="color:#4b3028; font-size:1rem;">
                                 Tell us more (optional)
