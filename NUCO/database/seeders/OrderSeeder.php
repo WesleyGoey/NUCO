@@ -38,7 +38,7 @@ class OrderSeeder extends Seeder
                 'restaurant_table_id' => $table?->id,
                 'order_name' => $faker->sentence(2),
                 'total_price' => 0, // will update after attaching products
-                'status' => $faker->randomElement(['pending','processing','completed']),
+                'status' => $faker->randomElement(['pending','processing','sent','completed']),
                 'discount_id' => $discounts->isNotEmpty() && $faker->boolean(20) ? $discounts->random()->id : null,
             ]);
 

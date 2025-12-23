@@ -12,7 +12,7 @@
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('waiter.tables') }}">Tables</a></li>
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('menu') }}">Menu</a></li>
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('discounts') }}">Discounts</a></li>
-                    <li class="nav-item"><a class="nav-link fs-5" href="{{ route('waiter.orders') }}">Orders</a></li>
+                    <li class="nav-item"><a class="nav-link fs-5" href="{{ route('orders') }}">Orders</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center" style="gap:0.6rem;">
@@ -41,7 +41,7 @@
                      <li class="nav-item"><a class="nav-link" href="{{ route('waiter.tables') }}">Tables</a></li>
                      <li class="nav-item"><a class="nav-link" href="{{ route('menu') }}">Menu</a></li>
                      <li class="nav-item"><a class="nav-link" href="{{ route('discounts') }}">Discounts</a></li>
-                     <li class="nav-item"><a class="nav-link" href="{{ route('waiter.orders') }}">Orders</a></li>
+                     <li class="nav-item"><a class="nav-link" href="{{ route('orders') }}">Orders</a></li>
  
                     @auth
                         {{-- mobile: only Profile link; logout lives in profile page --}}

@@ -171,17 +171,9 @@ class CartController extends Controller
 
     public function clear(): RedirectResponse
     {
-        $selectedTable = session('selected_table');
-        
-        if ($selectedTable && isset($selectedTable['id'])) {
-            // Release table back to available
-            $table = RestaurantTable::find($selectedTable['id']);
-            if ($table) {
-                $table->update(['status' => 'available']);
-            }
-        }
-
-        session()->forget(['waiter_cart', 'selected_table']);
-        return redirect()->route('waiter.tables');
+        // Only clear the cart for "Clear Cart" action.
+        // Do not release selected table or navigate away.
+        session()->forget('waiter_cart');
+        return redirect()->route('waiter.cart')->with('success', 'Cart cleared.');
     }
 }
