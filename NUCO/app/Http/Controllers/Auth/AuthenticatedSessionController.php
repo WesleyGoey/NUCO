@@ -34,8 +34,11 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('waiter.tables', absolute: false));
         }
 
+        if ($user && method_exists($user, 'isOwner') && $user->isOwner()) {
+            return redirect()->intended(route('owner.dashboard', absolute: false));
+        }
+
         if ($user && method_exists($user, 'isReviewer') && $user->isReviewer()) {
-            // route name added in web.php (see changes)
             return redirect()->intended(route('reviewer.reviews', absolute: false));
         }
 

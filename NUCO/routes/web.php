@@ -8,15 +8,34 @@ use App\Http\Controllers\waiter\CartController;
 use App\Http\Controllers\reviewer\ReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\Owner\DashboardController;
+use App\Http\Controllers\Owner\UserController as OwnerUserController;
+use App\Http\Controllers\Owner\ProductController as OwnerProductController;
+use App\Http\Controllers\Owner\InventoryController as OwnerInventoryController;
+use App\Http\Controllers\Owner\DiscountController as OwnerDiscountController;
+use App\Http\Controllers\Owner\OrderController as OwnerOrderController;
+use App\Http\Controllers\Owner\PaymentController as OwnerPaymentController;
+use App\Http\Controllers\Owner\ReviewController as OwnerReviewController;
+use App\Http\Controllers\Owner\TableController as OwnerTableController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 
 require __DIR__ . '/auth.php';
 
+/*
+|--------------------------------------------------------------------------
+| Public / Guest
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [MenuController::class, 'index'])->name('home');
 Route::get('/products', [MenuController::class, 'index'])->name('menu');
 Route::get('/products/{product}', [MenuController::class, 'show'])->name('menu.show');
 Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
+
+/*
+|--------------------------------------------------------------------------
+| Orders (shared)
+|--------------------------------------------------------------------------
+*/
 Route::get('/orders', [OrderController::class, 'index'])
     ->middleware(['auth','verified'])
     ->name('orders');
@@ -25,10 +44,19 @@ Route::get('/orders/{order}', [OrderController::class, 'show'])
     ->middleware(['auth','verified'])
     ->name('orders.show');
 
-Route::get('/orders/{order}/pay', [OrderController::class, 'pay'])
+Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
     ->middleware(['auth','verified'])
-    ->name('orders.pay');
+    ->name('orders.sent');
 
+Route::post('/orders/{order}/ready', [OrderController::class, 'markReady'])
+    ->middleware(['auth','verified'])
+    ->name('orders.ready');
+
+/*
+|--------------------------------------------------------------------------
+| Waiter
+|--------------------------------------------------------------------------
+*/
 Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group(function () {
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
     Route::post('/tables/select', [TableController::class, 'select'])->name('tables.select');
@@ -40,35 +68,61 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     Route::post('/cart/update-note', [CartController::class, 'updateNote'])->name('cart.update-note');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
-    Route::post('/cart/checkout', [\App\Http\Controllers\waiter\CartController::class, 'checkout'])
-        ->name('cart.checkout');
+    Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
-
+/*
+|--------------------------------------------------------------------------
+| Reviewer
+|--------------------------------------------------------------------------
+*/
 Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
     Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/thankyou', [ReviewController::class, 'thankyou'])->name('thankyou');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Cashier
+|--------------------------------------------------------------------------
+*/
 Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->group(function () {
     Route::get('/checkout', [CashierController::class, 'checkout'])->name('checkout');
     Route::post('/payment/process', [CashierController::class, 'processPayment'])->name('payment.process');
     Route::get('/order-history', [CashierController::class, 'orderHistory'])->name('order.history');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Owner (namespaced)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Route::resource('users', OwnerUserController::class)->except(['destroy']);
+    // Route::resource('products', OwnerProductController::class);
+    // Route::get('inventory', [OwnerInventoryController::class, 'index'])->name('inventory.index');
+    // Route::resource('discounts', OwnerDiscountController::class);
+    // Route::get('orders', [OwnerOrderController::class, 'index'])->name('orders.index');
+    // Route::resource('payments', OwnerPaymentController::class)->only(['index','update']);
+    // Route::resource('reviews', OwnerReviewController::class)->only(['index','destroy']);
+    // Route::get('tables', [OwnerTableController::class, 'index'])->name('tables.index');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated profile routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// top-level orders route already exists (->name('orders'))
-Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
-    ->middleware(['auth','verified'])
-    ->name('orders.sent');
