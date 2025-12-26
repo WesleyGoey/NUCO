@@ -61,10 +61,10 @@
                                     <span class="fw-semibold">Table {{ $order->table->table_number }}</span>
                                 </div>
                             @endif
-                            @if($order->user)
+                            @if($order->order_name || $order->user)
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-person me-2" style="color:#A4823B;"></i>
-                                    <span class="small">{{ $order->user->username }}</span>
+                                    <span class="small">{{ $order->order_name ?? ($order->user->username ?? '-') }}</span>
                                 </div>
                             @endif
                         </div>

@@ -64,7 +64,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td class="px-3">{{ $order->user->username ?? '-' }}</td>
+                                <td class="px-3">{{ $order->order_name ?? ($order->user->username ?? '-') }}</td>
                                 <td class="px-3"><span class="badge bg-secondary">{{ $order->products->sum('pivot.quantity') }} items</span></td>
                                 <td class="px-3">
                                     <span class="fw-semibold"

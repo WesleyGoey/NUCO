@@ -58,7 +58,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $order->user->username ?? '-' }}
+                                    {{ $order->order_name ?? ($order->user->username ?? '-') }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="badge bg-secondary">{{ $order->products->count() }} items</span>
