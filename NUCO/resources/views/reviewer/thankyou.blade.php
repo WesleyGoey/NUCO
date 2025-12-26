@@ -28,7 +28,7 @@
                     <div class="d-grid">
                         <a href="{{ route('reviewer.reviews') }}" class="btn btn-lg" 
                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:12px;padding:14px;font-weight:700;font-size:1rem;box-shadow:0 4px 12px rgba(164,130,59,0.2);">
-                            <i class="bi bi-arrow-left-circle me-2"></i> Submit Another Review Now
+                            <i class="bi bi-arrow-left-circle me-2"></i> Submit Another Review
                         </a>
                     </div>
                 </div>

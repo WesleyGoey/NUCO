@@ -5,7 +5,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\waiter\TableController;
 use App\Http\Controllers\waiter\CartController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\reviewer\ReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CashierController;
 use Illuminate\Support\Facades\Route;
@@ -40,11 +40,13 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     Route::post('/cart/update-note', [CartController::class, 'updateNote'])->name('cart.update-note');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::post('/cart/checkout', [\App\Http\Controllers\waiter\CartController::class, 'checkout'])
+        ->name('cart.checkout');
 });
 
 
 Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
- Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/thankyou', [ReviewController::class, 'thankyou'])->name('thankyou');
 });

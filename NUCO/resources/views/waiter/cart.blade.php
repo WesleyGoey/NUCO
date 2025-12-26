@@ -239,20 +239,20 @@
                                                     <button type="submit" class="btn btn-sm btn-outline-secondary" 
                                                             style="width:30px; height:30px; padding:0; border-radius:6px;">
                                                         <i class="bi bi-plus"></i>
+                                                    </form>
+                                                </div>
+
+                                                {{-- Delete Button --}}
+                                                <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                            style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                            onclick="return confirm('Remove this item from cart?')">
+                                                        <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
-
-                                            {{-- Delete Button --}}
-                                            <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                        style="width:30px; height:30px; padding:0; border-radius:6px;"
-                                                        onclick="return confirm('Remove this item from cart?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 @endforeach
@@ -269,30 +269,34 @@
                         {{-- Action Buttons - Always visible --}}
                         <div class="d-grid gap-2">
                             @if(!empty($cart))
-                                <button class="btn" disabled 
-                                        style="background:#A4823B;color:#F5F0E5;border-radius:8px;padding:10px;font-weight:700;">
-                                    Checkout (WIP)
-                                </button>
-                                
-                                <form method="POST" action="{{ route('waiter.cart.clear') }}">
+                                <form method="POST" action="{{ route('waiter.cart.checkout') }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-secondary w-100" 
-                                            style="border-radius:8px;padding:8px;"
-                                            onclick="return confirm('Clear all items from cart?')">
-                                        <i class="bi bi-trash3 me-1"></i> Clear Cart
+                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center"
+                                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:10px;font-weight:700;"
+                                            onclick="return confirm('Create order from cart and send to kitchen?')">
+                                        <i class="bi bi-bag-check me-2"></i>
+                                        Checkout
                                     </button>
                                 </form>
-                            @endif
-
-                            {{-- Cancel Order - Always visible --}}
-                            <form method="POST" action="{{ route('waiter.tables.cancel') }}">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-danger w-100" 
-                                        style="border-radius:8px;padding:8px;"
-                                        onclick="return confirm('Cancel order and return to table selection? {{ !empty($cart) ? 'Cart will be cleared and table will be released.' : 'Table will be released.' }}')">
-                                    <i class="bi bi-x-circle me-1"></i> Cancel Order
-                                </button>
-                            </form>
+ 
+                                 <form method="POST" action="{{ route('waiter.cart.clear') }}">
+                                     @csrf
+                                     <button type="submit" class="btn btn-outline-secondary w-100" 
+                                             style="border-radius:8px;padding:8px;"
+                                             onclick="return confirm('Clear all items from cart?')">
+                                         <i class="bi bi-trash3 me-1"></i> Clear Cart
+                                     </button>
+                                 </form>
+ 
+                                 <form method="POST" action="{{ route('waiter.tables.cancel') }}">
+                                     @csrf
+                                     <button type="submit" class="btn btn-outline-danger w-100" 
+                                             style="border-radius:8px;padding:8px;"
+                                             onclick="return confirm('Cancel order and return to table selection? {{ !empty($cart) ? 'Cart will be cleared and table will be released.' : 'Table will be released.' }}')">
+                                         <i class="bi bi-x-circle me-1"></i> Cancel Order
+                                     </button>
+                                 </form>
+                             @endif
                         </div>
                     </div>
                 </div>
