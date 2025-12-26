@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('order_name')->nullable();
             $table->integer('total_price')->default(0);
             $table->foreignId('discount_id')->nullable()->constrained('discounts')->nullOnDelete();;
-            $table->enum('status', ['pending', 'processing', 'sent', 'completed'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'sent', 'ready', 'completed'])->default('pending');
             $table->timestamps();
         });
     }

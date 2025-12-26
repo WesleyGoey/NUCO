@@ -5,12 +5,13 @@
 @section('content')
 <div class="container-xl py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0 fw-bold" style="color:#4b3028;">Orders (Waiter)</h3>
+        @php $roleLabel = optional(auth()->user())->role ? ucfirst(auth()->user()->role) : 'Role'; @endphp
+        <h3 class="mb-0 fw-bold" style="color:#4b3028;">Orders ({{ $roleLabel }})</h3>
         <small class="text-muted">Showing {{ $orders->total() }} orders</small>
     </div>
 
     @php
-        $statuses = ['all' => 'All', 'pending' => 'Pending', 'processing' => 'Processing', 'sent' => 'Sent', 'completed' => 'Completed'];
+        $statuses = ['all' => 'All', 'pending' => 'Pending', 'processing' => 'Processing', 'ready' => 'Ready', 'sent' => 'Sent', 'completed' => 'Completed'];
     @endphp
 
     {{-- Filter pills like menu.blade.php --}}
@@ -71,19 +72,18 @@
                                     </span>
                                 </td>
                                 <td class="px-3 text-end">
-                                    @if($order->status === 'processing')
-                                        <form method="POST" action="{{ route('orders.sent', $order) }}" class="d-inline">
-                                            @csrf
-                                            <button type="submit"
-                                                    class="btn btn-sm"
-                                                    style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:700;">
-                                                Send
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="text-muted small">—</span>
-                                    @endif
-                                </td>
+                                    @if($order->status === 'ready')
+                                         <form method="POST" action="{{ route('orders.sent', $order) }}" class="d-inline" onsubmit="event.stopPropagation();">
+                                             @csrf
+                                             <button type="submit"
+                                                     class="btn btn-sm order-action-btn"
+                                                     style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:700;"
+                                                     onclick="event.stopPropagation(); return confirm('Send order #{{ $order->id }} to the table?')">
+                                                 Send
+                                             </button>
+                                         </form>
+                                     @endif
+                                 </td>
                             </tr>
 
                             {{-- expandable details row --}}

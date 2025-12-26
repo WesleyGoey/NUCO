@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\RestaurantTable;
 use App\Models\Payment;
 use App\Models\InventoryLog;
+use App\Models\Discount;
 use Illuminate\Support\Arr;
 use Carbon\Carbon;
 
@@ -21,7 +22,7 @@ class OrderSeeder extends Seeder
         $products = Product::all();
         $users = User::all();
         $tables = RestaurantTable::all();
-        $discounts = \App\Models\Discount::all();
+        $discounts = Discount::all();
 
         if ($products->isEmpty()) {
             return;
@@ -37,8 +38,8 @@ class OrderSeeder extends Seeder
                 'user_id' => $user?->id,
                 'restaurant_table_id' => $table?->id,
                 'order_name' => $faker->sentence(2),
-                'total_price' => 0, // will update after attaching products
-                'status' => $faker->randomElement(['pending','processing','sent','completed']),
+                'total_price' => 0,
+                'status' => $faker->randomElement(['pending','processing','ready','sent','completed']),
                 'discount_id' => $discounts->isNotEmpty() && $faker->boolean(20) ? $discounts->random()->id : null,
             ]);
 

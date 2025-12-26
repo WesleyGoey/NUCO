@@ -15,7 +15,10 @@ class OrderController extends Controller
      */
     public function index(Request $request): View
     {
-        $filter = $request->query('status', 'all');
+        $user = $request->user();
+        // Waiter default tab should be 'ready'
+        $defaultFilter = ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) ? 'ready' : 'all';
+        $filter = $request->query('status', $defaultFilter);
 
         // counts per status for tabs
         $counts = Order::select('status', DB::raw('count(*) as cnt'))
@@ -29,20 +32,25 @@ class OrderController extends Controller
             $query->where('status', $filter);
         }
 
-        // Order by status priority (pending -> processing -> sent -> completed)
+        // Order by status priority (pending -> processing -> ready -> sent -> completed)
         // then by created_at ascending (oldest first so waiters see oldest orders on top)
         $statusOrderSql = "CASE
             WHEN status = 'pending' THEN 1
             WHEN status = 'processing' THEN 2
-            WHEN status = 'sent' THEN 3
-            WHEN status = 'completed' THEN 4
-            ELSE 5 END";
+            WHEN status = 'ready' THEN 3
+            WHEN status = 'sent' THEN 4
+            WHEN status = 'completed' THEN 5
+            ELSE 6 END";
 
         $orders = $query
             ->orderByRaw($statusOrderSql)
             ->orderBy('created_at', 'asc')
             ->paginate(20)
             ->withQueryString();
+
+        if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
+            return view('orders', compact('orders', 'counts', 'filter'));
+        }
 
         return view('orders', compact('orders', 'counts', 'filter'));
     }
@@ -64,7 +72,8 @@ class OrderController extends Controller
      */
     public function markSent(Order $order): RedirectResponse
     {
-        if ($order->status === 'processing') {
+        // allow sending only when order is 'ready'
+        if ($order->status === 'ready') {
             $order->update(['status' => 'sent']);
         }
 

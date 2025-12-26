@@ -3,8 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\TableController;
-use App\Http\Controllers\CartController;
+use App\Http\Controllers\waiter\TableController;
+use App\Http\Controllers\waiter\CartController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CashierController;

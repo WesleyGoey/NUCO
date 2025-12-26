@@ -15,11 +15,13 @@ class Payment extends Model
         'user_id',
         'amount',
         'method',
-        'payment_time',
+        'is_available',
+        'payment_time'
     ];
 
     protected $casts = [
-        'payment_time' => 'datetime',
+        'is_available' => 'boolean',
+        'payment_time' => 'datetime'
     ];
 
     public function order(): BelongsTo

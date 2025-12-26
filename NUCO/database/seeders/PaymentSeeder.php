@@ -28,6 +28,7 @@ class PaymentSeeder extends Seeder
                 'user_id' => $cashiers->isNotEmpty() ? $cashiers->random()->id : null,
                 'amount' => $order->total_price ?? 0,
                 'method' => $faker->randomElement(['cash', 'card', 'qris']),
+                'is_available' => true,
                 'payment_time' => Carbon::now()->subMinutes(rand(0, 1000)),
             ]);
         }
