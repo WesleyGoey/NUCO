@@ -16,7 +16,6 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        // Waiter default tab should be 'ready'
         $defaultFilter = ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) ? 'ready' : 'all';
         $filter = $request->query('status', $defaultFilter);
 
@@ -26,14 +25,15 @@ class OrderController extends Controller
             ->pluck('cnt', 'status')
             ->toArray();
 
+        // add total 'all' count so "All" shows a badge too
+        $counts['all'] = Order::count();
+
         $query = Order::with(['user', 'table', 'products']);
 
         if ($filter !== 'all') {
             $query->where('status', $filter);
         }
 
-        // Order by status priority (pending -> processing -> ready -> sent -> completed)
-        // then by created_at ascending (oldest first so waiters see oldest orders on top)
         $statusOrderSql = "CASE
             WHEN status = 'pending' THEN 1
             WHEN status = 'processing' THEN 2
@@ -42,11 +42,17 @@ class OrderController extends Controller
             WHEN status = 'completed' THEN 5
             ELSE 6 END";
 
-        $orders = $query
-            ->orderByRaw($statusOrderSql)
-            ->orderBy('created_at', 'asc')
-            ->paginate(20)
-            ->withQueryString();
+        if ($filter === 'all') {
+            // plain ascending by order id when viewing ALL
+            $orders = $query->orderBy('id', 'asc')->paginate(20)->withQueryString();
+        } else {
+            // keep status-priority ordering for filtered views
+            $orders = $query
+                ->orderByRaw($statusOrderSql)
+                ->orderBy('id', 'asc')
+                ->paginate(20)
+                ->withQueryString();
+        }
 
         if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
             return view('orders', compact('orders', 'counts', 'filter'));

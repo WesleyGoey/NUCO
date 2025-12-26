@@ -18,11 +18,12 @@
     <div class="mb-3 overflow-auto" style="white-space:nowrap; -webkit-overflow-scrolling:touch;">
         @foreach($statuses as $key => $label)
             @php $active = ($filter ?? 'all') === $key; @endphp
-            <a href="{{ route('orders', $key === 'all' ? [] : ['status' => $key]) }}"
+            {{-- always include status param so "All" becomes ?status=all --}}
+            <a href="{{ route('orders', ['status' => $key]) }}"
                class="btn btn-sm me-2 mb-2"
                style="{{ $active ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
                 {{ $label }}
-                @if(isset($counts[$key]) && $key !== 'all')
+                @if(isset($counts[$key]))
                     <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
                         {{ $counts[$key] }}
                     </span>
