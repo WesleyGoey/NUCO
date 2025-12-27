@@ -18,11 +18,15 @@ class OrderController extends Controller
         $user = $request->user();
 
         // Default filter per role:
-        // - waiter -> 'ready' (existing behavior)
-        // - chef   -> 'pending' (requested)
+        // - owner  -> 'all' (read-only, no actions)
+        // - waiter -> 'ready'
+        // - chef   -> 'pending'
         // - otherwise -> 'all'
         $defaultFilter = 'all';
-        if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
+        
+        if ($user && method_exists($user, 'isOwner') && $user->isOwner()) {
+            $defaultFilter = 'all';
+        } elseif ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
             $defaultFilter = 'ready';
         } elseif ($user && method_exists($user, 'isChef') && $user->isChef()) {
             $defaultFilter = 'pending';
