@@ -7,8 +7,8 @@ use App\Http\Controllers\waiter\TableController;
 use App\Http\Controllers\waiter\CartController;
 use App\Http\Controllers\reviewer\ReviewController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\CashierController;
-use App\Http\Controllers\Chef\ChefController;
+use App\Http\Controllers\Cashier\CashierController;
+use App\Http\Controllers\Chef\InventoryController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\UserController as OwnerUserController;
 use App\Http\Controllers\Owner\ProductController as OwnerProductController;
@@ -124,7 +124,7 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
 |--------------------------------------------------------------------------
 */
 Route::prefix('chef')->name('chef.')->middleware(['auth','verified'])->group(function () {
-    Route::get('/inventory', [ChefController::class, 'inventory'])->name('inventory');
+    Route::get('/inventory', [InventoryController::class, 'inventory'])->name('inventory');
 });
 
 /*

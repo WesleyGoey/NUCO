@@ -35,8 +35,6 @@
                 <ul class="navbar-nav d-lg-none flex-column" style="gap:0.6rem; padding:0.75rem 1rem; margin:0;">
                     <li class="nav-item"><a class="nav-link" href="{{ route('orders') }}">Orders</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('chef.inventory') }}">Inventory</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('menu') }}">Menu</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('discounts') }}">Discounts</a></li>
 
                     @auth
                         <li class="nav-item"><a class="nav-link" href="{{ route('profile') }}">Profile</a></li>

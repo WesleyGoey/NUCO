@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Cashier;
 
+use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class CashierController extends Controller
         $orders = Order::with(['user', 'table', 'products', 'discount'])
             ->whereDoesntHave('payment')
             ->whereIn('status', ['completed', 'processing'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
 
         return view('cashier.checkout', compact('orders'));
