@@ -7,7 +7,7 @@ use App\Models\Ingredient;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class ChefController extends Controller
+class InventoryController extends Controller
 {
     /**
      * Display inventory/stock for chef monitoring

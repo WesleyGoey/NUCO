@@ -10,7 +10,6 @@
             <div class="d-none d-lg-flex align-items-center ms-auto" style="gap:2rem;">
                 <ul class="navbar-nav mb-0 d-flex flex-row align-items-center" style="gap:1.5rem;">
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('cashier.checkout') }}">Checkout</a></li>
-                    <li class="nav-item"><a class="nav-link fs-5" href="{{ route('cashier.order.history') }}">Order History</a></li>
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('menu') }}">Menu</a></li>
                     <li class="nav-item"><a class="nav-link fs-5" href="{{ route('discounts') }}">Discounts</a></li>
                 </ul>
@@ -36,7 +35,6 @@
              <div class="w-100">
                  <ul class="navbar-nav d-lg-none flex-column" style="gap:0.6rem; padding:0.75rem 1rem; margin:0;">
                      <li class="nav-item"><a class="nav-link" href="{{ route('cashier.checkout') }}">Checkout</a></li>
-                     <li class="nav-item"><a class="nav-link" href="{{ route('cashier.order.history') }}">Order History</a></li>
                      <li class="nav-item"><a class="nav-link" href="{{ route('menu') }}">Menu</a></li>
                      <li class="nav-item"><a class="nav-link" href="{{ route('discounts') }}">Discounts</a></li>
 
