@@ -50,8 +50,19 @@
                             <td class="px-4 py-3">{{ $user->email }}</td>
                             <td class="px-4 py-3">{{ $user->phone }}</td>
                             <td class="px-4 py-3">
+                                @php
+                                    $roleColors = [
+                                        'owner' => ['bg' => '#FFF4E6', 'text' => '#D68910'],
+                                        'waiter' => ['bg' => '#E6F9EE', 'text' => '#2D7A3B'],
+                                        'chef' => ['bg' => '#FFE6E6', 'text' => '#C0392B'],
+                                        'cashier' => ['bg' => '#E6F0FF', 'text' => '#2E5C8A'],
+                                        'reviewer' => ['bg' => '#F3E6FF', 'text' => '#7B3FA8'],
+                                    ];
+                                    $role = $user->role ?? 'owner';
+                                    $colors = $roleColors[$role] ?? ['bg' => '#F5F0E5', 'text' => '#A4823B'];
+                                @endphp
                                 <span class="badge text-capitalize" 
-                                      style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:6px 12px;border-radius:8px;">
+                                      style="background:{{ $colors['bg'] }};color:{{ $colors['text'] }};font-weight:600;padding:6px 12px;border-radius:8px;">
                                     {{ $user->role ?? '-' }}
                                 </span>
                             </td>

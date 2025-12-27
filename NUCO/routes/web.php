@@ -111,6 +111,11 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::post('/users', [OwnerUserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}/edit', [OwnerUserController::class, 'edit'])->name('users.edit');
     Route::patch('/users/{user}', [OwnerUserController::class, 'update'])->name('users.update');
+    
+    Route::resource('products', OwnerProductController::class);
+    
+    // Reviews (read-only)
+    Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');
 });
 
 /*
