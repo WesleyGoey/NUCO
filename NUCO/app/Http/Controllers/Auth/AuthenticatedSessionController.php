@@ -28,20 +28,35 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // redirect by role: waiter -> waiter.tables, reviewer -> reviews, otherwise default dashboard
+        // redirect by role
         $user = $request->user();
+        
+        // Waiter -> tables
         if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
             return redirect()->intended(route('waiter.tables', absolute: false));
         }
 
+        // Owner -> dashboard
         if ($user && method_exists($user, 'isOwner') && $user->isOwner()) {
             return redirect()->intended(route('owner.dashboard', absolute: false));
         }
 
+        // Cashier -> checkout
+        if ($user && method_exists($user, 'isCashier') && $user->isCashier()) {
+            return redirect()->intended(route('cashier.checkout', absolute: false));
+        }
+
+        // Reviewer -> reviews
         if ($user && method_exists($user, 'isReviewer') && $user->isReviewer()) {
             return redirect()->intended(route('reviewer.reviews', absolute: false));
         }
 
+        // Chef -> orders (with pending filter)
+        if ($user && method_exists($user, 'isChef') && $user->isChef()) {
+            return redirect()->intended(route('orders', absolute: false));
+        }
+
+        // Default -> dashboard
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\waiter\CartController;
 use App\Http\Controllers\reviewer\ReviewController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\Chef\ChefController;
 use App\Http\Controllers\Owner\DashboardController;
 use App\Http\Controllers\Owner\UserController as OwnerUserController;
 use App\Http\Controllers\Owner\ProductController as OwnerProductController;
@@ -47,6 +48,10 @@ Route::get('/orders/{order}', [OrderController::class, 'show'])
 Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
     ->middleware(['auth','verified'])
     ->name('orders.sent');
+
+Route::post('/orders/{order}/processing', [OrderController::class, 'markProcessing'])
+    ->middleware(['auth','verified'])
+    ->name('orders.processing');
 
 Route::post('/orders/{order}/ready', [OrderController::class, 'markReady'])
     ->middleware(['auth','verified'])
@@ -109,6 +114,15 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     // Route::resource('payments', OwnerPaymentController::class)->only(['index','update']);
     // Route::resource('reviews', OwnerReviewController::class)->only(['index','destroy']);
     // Route::get('tables', [OwnerTableController::class, 'index'])->name('tables.index');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Chef
+|--------------------------------------------------------------------------
+*/
+Route::prefix('chef')->name('chef.')->middleware(['auth','verified'])->group(function () {
+    Route::get('/inventory', [ChefController::class, 'inventory'])->name('inventory');
 });
 
 /*

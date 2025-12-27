@@ -60,7 +60,7 @@ class CashierController extends Controller
         DB::transaction(function () use ($request, $order) {
             Payment::create([
                 'order_id' => $order->id,
-                'user_id' => auth()->id(),
+                'user_id' => $request->user()->id,
                 'amount' => $request->amount,
                 'method' => $request->method,
                 'payment_time' => now(),

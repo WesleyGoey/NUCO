@@ -16,7 +16,18 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         $user = $request->user();
-        $defaultFilter = ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) ? 'ready' : 'all';
+
+        // Default filter per role:
+        // - waiter -> 'ready' (existing behavior)
+        // - chef   -> 'pending' (requested)
+        // - otherwise -> 'all'
+        $defaultFilter = 'all';
+        if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
+            $defaultFilter = 'ready';
+        } elseif ($user && method_exists($user, 'isChef') && $user->isChef()) {
+            $defaultFilter = 'pending';
+        }
+
         $filter = $request->query('status', $defaultFilter);
 
         // counts per status for tabs
@@ -43,10 +54,8 @@ class OrderController extends Controller
             ELSE 6 END";
 
         if ($filter === 'all') {
-            // plain ascending by order id when viewing ALL
             $orders = $query->orderBy('id', 'asc')->paginate(20)->withQueryString();
         } else {
-            // keep status-priority ordering for filtered views
             $orders = $query
                 ->orderByRaw($statusOrderSql)
                 ->orderBy('id', 'asc')
@@ -54,31 +63,42 @@ class OrderController extends Controller
                 ->withQueryString();
         }
 
-        if ($user && method_exists($user, 'isWaiter') && $user->isWaiter()) {
-            return view('orders', compact('orders', 'counts', 'filter'));
-        }
-
         return view('orders', compact('orders', 'counts', 'filter'));
     }
 
     /**
-     * Mark order -> processing
+     * Mark order -> processing (chef action "Process")
      */
     public function markProcessing(Order $order): RedirectResponse
     {
+        // only allow moving from 'pending' -> 'processing'
         if ($order->status === 'pending') {
             $order->update(['status' => 'processing']);
+            return redirect()->route('orders', ['status' => 'processing'])->with('success', "Order #{$order->id} moved to processing.");
         }
 
-        return redirect()->route('orders', ['status' => 'processing'])->with('success', 'Order marked processing.');
+        return back()->with('error', "Order #{$order->id} cannot be processed from status '{$order->status}'.");
     }
 
     /**
-     * Mark order -> sent (delivered to customer)
+     * Mark order -> ready (chef action "Ready")
+     */
+    public function markReady(Order $order): RedirectResponse
+    {
+        // only allow moving from 'processing' -> 'ready'
+        if ($order->status === 'processing') {
+            $order->update(['status' => 'ready']);
+            return redirect()->route('orders', ['status' => 'ready'])->with('success', "Order #{$order->id} marked ready.");
+        }
+
+        return back()->with('error', "Order #{$order->id} cannot be marked ready from status '{$order->status}'.");
+    }
+
+    /**
+     * Mark order -> sent (existing)
      */
     public function markSent(Order $order): RedirectResponse
     {
-        // allow sending only when order is 'ready'
         if ($order->status === 'ready') {
             $order->update(['status' => 'sent']);
         }
@@ -87,7 +107,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Mark order -> completed (after payment)
+     * Mark order -> completed (existing)
      */
     public function markCompleted(Order $order): RedirectResponse
     {
@@ -98,6 +118,9 @@ class OrderController extends Controller
         return redirect()->route('orders', ['status' => 'completed'])->with('success', 'Order marked completed.');
     }
 
+    /**
+     * Show single order (existing)
+     */
     public function show(Order $order): View
     {
         $order->load(['user','table','products']);
