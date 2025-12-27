@@ -17,28 +17,32 @@
                 @php $href = $c['href'] ?? null; @endphp
                 <a href="{{ $href ?? '#' }}" class="text-decoration-none {{ $href ? '' : 'disabled-link' }}"
                    {!! $href ? '' : 'onclick="return false;" aria-disabled="true"' !!}>
-                    <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div>
-                                    <div class="fw-semibold" style="color:#4b3028;">{{ $c['title'] }}</div>
-                                    <div class="small text-muted">{{ $c['desc'] }}</div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="fw-bold" style="color:#A4823B;font-size:1.1rem;">
+                    <div class="card h-100 shadow-sm border-0 dashboard-card position-relative rounded-3" style="overflow:hidden; min-height:220px;">
+                        <div class="card-body d-flex flex-column p-3">
+                            {{-- Top: title --}}
+                            <div class="mb-2">
+                                <div class="fw-semibold text-dark">{{ $c['title'] }}</div>
+                                <div class="small text-muted">{{ $c['desc'] }}</div>
+                            </div>
+
+                            {{-- Middle: centered count --}}
+                            <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                                <div class="text-center">
+                                    <div class="fw-bold" style="color:#A4823B; font-size:1.6rem;">
                                         {{ $counts[$c['key']] ?? 0 }}
                                     </div>
-                                    <div class="text-muted small">total</div>
+                                    <div class="small text-muted">total</div>
                                 </div>
                             </div>
 
-                            <div class="mt-auto d-flex align-items-center justify-content-between">
-                                <div class="text-muted small">
-                                    <i class="bi {{ $c['icon'] }}" style="font-size:1.25rem;color:#A4823B;"></i>
-                                </div>
-                                <div>
-                                    <i class="bi bi-arrow-right-circle" style="color:#A4823B;font-size:1.2rem;"></i>
-                                </div>
+                            {{-- Bottom-right arrow --}}
+                            <div class="mt-3 d-flex justify-content-end align-items-center">
+                                <i class="bi bi-arrow-right-circle" style="color:#A4823B;font-size:1.2rem;"></i>
+                            </div>
+
+                            {{-- Icon: bottom-left using Bootstrap positioning --}}
+                            <div class="position-absolute start-0 bottom-0 m-3">
+                                <i class="bi {{ $c['icon'] }}" style="font-size:1.9rem;color:#A4823B;"></i>
                             </div>
                         </div>
                     </div>
@@ -46,7 +50,5 @@
             </div>
         @endforeach
     </div>
-
-    <style>.disabled-link { pointer-events: none; opacity: 0.6; }</style>
 </div>
 @endsection

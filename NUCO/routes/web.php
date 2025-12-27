@@ -22,21 +22,11 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/auth.php';
 
-/*
-|--------------------------------------------------------------------------
-| Public / Guest
-|--------------------------------------------------------------------------
-*/
 Route::get('/', [MenuController::class, 'index'])->name('home');
 Route::get('/products', [MenuController::class, 'index'])->name('menu');
 Route::get('/products/{product}', [MenuController::class, 'show'])->name('menu.show');
 Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
 
-/*
-|--------------------------------------------------------------------------
-| Orders (shared)
-|--------------------------------------------------------------------------
-*/
 Route::get('/orders', [OrderController::class, 'index'])
     ->middleware(['auth','verified'])
     ->name('orders');
@@ -57,11 +47,6 @@ Route::post('/orders/{order}/ready', [OrderController::class, 'markReady'])
     ->middleware(['auth','verified'])
     ->name('orders.ready');
 
-/*
-|--------------------------------------------------------------------------
-| Waiter
-|--------------------------------------------------------------------------
-*/
 Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group(function () {
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
     Route::post('/tables/select', [TableController::class, 'select'])->name('tables.select');
@@ -76,62 +61,60 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Reviewer
-|--------------------------------------------------------------------------
-*/
 Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
     Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/thankyou', [ReviewController::class, 'thankyou'])->name('thankyou');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Cashier
-|--------------------------------------------------------------------------
-*/
 Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->group(function () {
     Route::get('/checkout', [CashierController::class, 'checkout'])->name('checkout');
     Route::post('/payment/process', [CashierController::class, 'processPayment'])->name('payment.process');
     Route::get('/order-history', [CashierController::class, 'orderHistory'])->name('order.history');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Owner (namespaced)
-|--------------------------------------------------------------------------
-*/
 Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
+    // Users
     Route::get('/users', [OwnerUserController::class, 'index'])->name('users');
     Route::get('/users/create', [OwnerUserController::class, 'create'])->name('users.create');
     Route::post('/users', [OwnerUserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}/edit', [OwnerUserController::class, 'edit'])->name('users.edit');
     Route::patch('/users/{user}', [OwnerUserController::class, 'update'])->name('users.update');
-    
-    Route::resource('products', OwnerProductController::class);
-    
+
+    // Products
+    Route::get('/products', [OwnerProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [OwnerProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [OwnerProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{product}/edit', [OwnerProductController::class, 'edit'])->name('products.edit');
+    Route::patch('/products/{product}', [OwnerProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [OwnerProductController::class, 'destroy'])->name('products.destroy');
+
+    // Discounts
+    Route::get('/discounts', [OwnerDiscountController::class, 'index'])->name('discounts.index');
+    Route::get('/discounts/create', [OwnerDiscountController::class, 'create'])->name('discounts.create');
+    Route::post('/discounts', [OwnerDiscountController::class, 'store'])->name('discounts.store');
+    Route::get('/discounts/{discount}/edit', [OwnerDiscountController::class, 'edit'])->name('discounts.edit');
+    Route::patch('/discounts/{discount}', [OwnerDiscountController::class, 'update'])->name('discounts.update');
+    Route::delete('/discounts/{discount}', [OwnerDiscountController::class, 'destroy'])->name('discounts.destroy');
+
+    // Tables
+    Route::get('/tables', [OwnerTableController::class, 'index'])->name('tables.index');
+    Route::get('/tables/create', [OwnerTableController::class, 'create'])->name('tables.create');
+    Route::post('/tables', [OwnerTableController::class, 'store'])->name('tables.store');
+    Route::get('/tables/{table}/edit', [OwnerTableController::class, 'edit'])->name('tables.edit');
+    Route::patch('/tables/{table}', [OwnerTableController::class, 'update'])->name('tables.update');
+    Route::delete('/tables/{table}', [OwnerTableController::class, 'destroy'])->name('tables.destroy');
+
     // Reviews (read-only)
     Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Chef
-|--------------------------------------------------------------------------
-*/
 Route::prefix('chef')->name('chef.')->middleware(['auth','verified'])->group(function () {
     Route::get('/inventory', [InventoryController::class, 'inventory'])->name('inventory');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated profile routes
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
