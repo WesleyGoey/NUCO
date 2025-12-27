@@ -99,16 +99,13 @@ Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->gro
 |--------------------------------------------------------------------------
 */
 Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Route::resource('users', OwnerUserController::class)->except(['destroy']);
-    // Route::resource('products', OwnerProductController::class);
-    // Route::get('inventory', [OwnerInventoryController::class, 'index'])->name('inventory.index');
-    // Route::resource('discounts', OwnerDiscountController::class);
-    // Route::get('orders', [OwnerOrderController::class, 'index'])->name('orders.index');
-    // Route::resource('payments', OwnerPaymentController::class)->only(['index','update']);
-    // Route::resource('reviews', OwnerReviewController::class)->only(['index','destroy']);
-    // Route::get('tables', [OwnerTableController::class, 'index'])->name('tables.index');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
+    Route::get('/users', [OwnerUserController::class, 'index'])->name('users');
+    Route::get('/users/create', [OwnerUserController::class, 'create'])->name('users.create');
+    Route::post('/users', [OwnerUserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [OwnerUserController::class, 'edit'])->name('users.edit');
+    Route::patch('/users/{user}', [OwnerUserController::class, 'update'])->name('users.update');
 });
 
 /*

@@ -11,35 +11,12 @@
         </div>
     </div>
 
-    @php
-        // use $counts provided by controller; default zeros if missing
-        $counts = $counts ?? [
-            'users' => 0,
-            'products' => 0,
-            'ingredients' => 0,
-            'tables' => 0,
-            'discounts' => 0,
-            'orders' => 0,
-            'payments' => 0,
-            'reviews' => 0,
-        ];
-
-        $cards = [
-            ['title'=>'Users','route'=>'owner.users.index','key'=>'users','icon'=>'bi-people','desc'=>'Manage staff accounts'],
-            ['title'=>'Products','route'=>'owner.products.index','key'=>'products','icon'=>'bi-card-list','desc'=>'Manage menu & prices'],
-            ['title'=>'Inventory & Recipes','route'=>'owner.inventory.index','key'=>'ingredients','icon'=>'bi-box-seam','desc'=>'Stock & recipes'],
-            ['title'=>'Tables','route'=>'owner.tables.index','key'=>'tables','icon'=>'bi-table','desc'=>'Manage dining layout'],
-            ['title'=>'Discounts','route'=>'owner.discounts.index','key'=>'discounts','icon'=>'bi-tag','desc'=>'Promos & periods'],
-            ['title'=>'Orders','route'=>'owner.orders.index','key'=>'orders','icon'=>'bi-basket','desc'=>'Realtime order monitor'],
-            ['title'=>'Payments','route'=>'owner.payments.index','key'=>'payments','icon'=>'bi-credit-card','desc'=>'Payment methods & records'],
-            ['title'=>'Reviews','route'=>'owner.reviews.index','key'=>'reviews','icon'=>'bi-chat-left-text','desc'=>'Customer feedback'],
-        ];
-    @endphp
-
     <div class="row g-3">
         @foreach($cards as $c)
             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                <a href="{{ route($c['route']) }}" class="text-decoration-none">
+                @php $href = $c['href'] ?? null; @endphp
+                <a href="{{ $href ?? '#' }}" class="text-decoration-none {{ $href ? '' : 'disabled-link' }}"
+                   {!! $href ? '' : 'onclick="return false;" aria-disabled="true"' !!}>
                     <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex align-items-start justify-content-between mb-3">
@@ -69,5 +46,7 @@
             </div>
         @endforeach
     </div>
+
+    <style>.disabled-link { pointer-events: none; opacity: 0.6; }</style>
 </div>
 @endsection

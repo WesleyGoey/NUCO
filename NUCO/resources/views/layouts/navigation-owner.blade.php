@@ -2,7 +2,7 @@
     <div class="container-fluid" style="min-height:70px;">
         <div class="d-flex align-items-center justify-content-between" style="width:100%; height:70px;">
             <!-- Left: Brand / Logo -->
-            <a class="navbar-brand d-flex align-items-center" href="{{ route('reviewer.reviews') }}" style="margin-left:8px;">
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('owner.dashboard') }}" style="margin-left:8px;">
                 <span style="background:#F5F0E5;border-radius:50%;width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo {{ config('app.name', 'NUCO') }}" style="height:40px;width:40px;object-fit:contain;">
                 </span>
