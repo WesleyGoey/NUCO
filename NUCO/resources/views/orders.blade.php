@@ -77,13 +77,16 @@
                                 <td class="px-3 text-end">
                                     @php
                                         $user = auth()->user();
+                                        $isOwner = $user && method_exists($user, 'isOwner') && $user->isOwner();
                                         $isChef = $user && method_exists($user, 'isChef') && $user->isChef();
                                         $isWaiter = $user && method_exists($user, 'isWaiter') && $user->isWaiter();
+                                        $hasAction = false;
                                     @endphp
 
                                     {{-- Chef Actions --}}
                                     @if($isChef)
                                         @if($order->status === 'pending')
+                                            @php $hasAction = true; @endphp
                                             <form method="POST" action="{{ route('orders.processing', $order) }}" class="d-inline" onsubmit="event.stopPropagation();">
                                                 @csrf
                                                 <button type="submit"
@@ -95,6 +98,7 @@
                                                 </button>
                                             </form>
                                         @elseif($order->status === 'processing')
+                                            @php $hasAction = true; @endphp
                                             <form method="POST" action="{{ route('orders.ready', $order) }}" class="d-inline" onsubmit="event.stopPropagation();">
                                                 @csrf
                                                 <button type="submit"
@@ -106,10 +110,10 @@
                                                 </button>
                                             </form>
                                         @endif
-                                    @endif
 
                                     {{-- Waiter Actions --}}
-                                    @if($isWaiter && $order->status === 'ready')
+                                    @elseif($isWaiter && $order->status === 'ready')
+                                        @php $hasAction = true; @endphp
                                         <form method="POST" action="{{ route('orders.sent', $order) }}" class="d-inline" onsubmit="event.stopPropagation();">
                                             @csrf
                                             <button type="submit"
@@ -120,6 +124,14 @@
                                                 Send
                                             </button>
                                         </form>
+                                    @endif
+
+                                    {{-- Show "No action" if nothing was rendered --}}
+                                    @if(!$hasAction)
+                                        <span class="text-muted small">
+                                            <i class="bi bi-dash-circle me-1"></i>
+                                            No action
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
