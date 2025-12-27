@@ -50,23 +50,23 @@ class CashierController extends Controller
             'amount' => 'required|numeric|min:0',
         ]);
 
+        $cashierId = $request->user()->id; // capture once
+
         $order = Order::findOrFail($request->order_id);
 
-        // Check if payment already exists
         if ($order->payment()->exists()) {
             return back()->with('error', 'This order has already been paid.');
         }
 
-        DB::transaction(function () use ($request, $order) {
+        DB::transaction(function () use ($request, $order, $cashierId) {
             Payment::create([
                 'order_id' => $order->id,
-                'user_id' => auth()->id(),
+                'user_id' => $cashierId,
                 'amount' => $request->amount,
                 'method' => $request->method,
                 'payment_time' => now(),
             ]);
 
-            // Update order status to completed if not already
             if ($order->status !== 'completed') {
                 $order->update(['status' => 'completed']);
             }
