@@ -12,11 +12,33 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::with('category')->orderBy('id','asc')->paginate(30);
+        $search = $request->query('search', '');
+        $selectedCategory = $request->query('category', '');
+
+        $query = Product::with('category');
+
+        // Search filter
+        if (!empty($search)) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Category filter
+        if (!empty($selectedCategory)) {
+            $query->where('category_id', $selectedCategory);
+        }
+
+        // Order alphabetically by name
+        $products = $query->orderBy('name', 'asc')->paginate(30);
+        
         $availableCount = Product::where('is_available', true)->count();
-        return view('owner.products.index', compact('products', 'availableCount'));
+        $totalProductsCount = Product::count();
+        
+        // Get all categories for filter buttons
+        $categories = Category::orderBy('name')->get();
+
+        return view('owner.products.index', compact('products', 'availableCount', 'totalProductsCount', 'categories', 'search', 'selectedCategory'));
     }
 
     public function create(): View

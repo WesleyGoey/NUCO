@@ -107,6 +107,10 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::patch('/tables/{table}', [OwnerTableController::class, 'update'])->name('tables.update');
     Route::delete('/tables/{table}', [OwnerTableController::class, 'destroy'])->name('tables.destroy');
 
+    // Payments
+    Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments/toggle', [OwnerPaymentController::class, 'toggleMethod'])->name('payments.toggle');
+
     // Reviews (read-only)
     Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');
 });

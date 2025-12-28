@@ -21,6 +21,59 @@
         </div>
     </div>
 
+    {{-- Search & Filter Card --}}
+    <div class="card shadow-sm border-0 mb-4" style="border-radius:12px; overflow:hidden;">
+        <div class="card-body p-3">
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+                {{-- Filters (left, scrollable) --}}
+                <div class="overflow-auto" style="white-space:nowrap; -webkit-overflow-scrolling:touch; flex:1;">
+                    @php $allActive = empty($selectedCategory); @endphp
+                    <a href="{{ route('owner.products.index', ['search' => $search ?? '']) }}"
+                       class="btn btn-sm me-2 mb-2"
+                       style="{{ $allActive ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
+                        All
+                        <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
+                            {{ $totalProductsCount }}
+                        </span>
+                    </a>
+
+                    @foreach($categories as $cat)
+                        @php
+                            $catId = (string) $cat->id;
+                            $active = !empty($selectedCategory) && (string)$selectedCategory === $catId;
+                            $productCount = $cat->products()->count();
+                        @endphp
+                        <a href="{{ route('owner.products.index', ['category' => $catId, 'search' => $search ?? '']) }}"
+                           class="btn btn-sm me-2 mb-2"
+                           style="{{ $active ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
+                            {{ $cat->name }}
+                            <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
+                                {{ $productCount }}
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+
+                {{-- Search (right) --}}
+                <div style="min-width:260px;">
+                    <form method="GET" action="{{ route('owner.products.index') }}" class="d-flex">
+                        @if(!empty($selectedCategory))
+                            <input type="hidden" name="category" value="{{ $selectedCategory }}">
+                        @endif
+                        <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
+                               placeholder="Search products..." 
+                               style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;" />
+                        <button type="submit" class="btn btn-sm ms-2"
+                                style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:600;">
+                            Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Products Table --}}
     <div class="card shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
         <div class="table-responsive">
             <table class="table mb-0 align-middle">
@@ -36,9 +89,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($products as $product)
+                    @forelse($products as $index => $product)
                         <tr style="border-bottom:1px solid #E9E6E2;">
-                            <td class="px-4 py-3">{{ $product->id }}</td>
+                            <td class="px-4 py-3">{{ $products->firstItem() + $index }}</td>
                             <td class="px-4 py-3">
                                 @if($product->image_path)
                                     <img src="{{ asset('storage/' . $product->image_path) }}" 
@@ -105,7 +158,13 @@
                         <tr>
                             <td colspan="7" class="text-center text-muted py-5">
                                 <i class="bi bi-inbox" style="font-size:2rem;color:#E9E6E2;"></i>
-                                <div class="mt-2">No products found.</div>
+                                <div class="mt-2">
+                                    @if(!empty($search))
+                                        No products found for "{{ $search }}"
+                                    @else
+                                        No products found.
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -115,7 +174,7 @@
 
         @if($products->hasPages())
             <div class="p-3 border-top" style="background:#FAFAFA;">
-                {{ $products->links() }}
+                {{ $products->appends(['search' => $search, 'category' => $selectedCategory])->links() }}
             </div>
         @endif
     </div>
