@@ -75,7 +75,7 @@ class OrderSeeder extends Seeder
                     'order_id' => $order->id,
                     'user_id' => $user?->id,
                     'amount' => $total,
-                    'method' => $faker->randomElement(['cash','card','qris']),
+                    'method' => $faker->randomElement(['qris', 'cash']),
                     'payment_time' => Carbon::now()->subMinutes(rand(0, 720)),
                 ]);
             }

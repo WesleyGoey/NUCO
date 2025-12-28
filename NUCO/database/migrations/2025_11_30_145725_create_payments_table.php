@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->integer('amount')->default(0);
-            $table->enum('method', ['cash', 'card', 'qris']);
+            $table->enum('method', ['qris', 'cash']);
             $table->boolean('is_available')->default(true);
             $table->timestamp('payment_time');
             $table->timestamps();
