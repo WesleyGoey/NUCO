@@ -47,7 +47,7 @@ class CashierController extends Controller
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id',
-            'method' => 'required|in:cash,card,qris',
+            'method' => 'required|in:qris,cash',
             'amount' => 'required|numeric|min:0',
         ]);
 

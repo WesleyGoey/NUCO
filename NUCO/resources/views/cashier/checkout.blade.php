@@ -10,30 +10,16 @@
             <div class="small text-muted">Process payments for unpaid orders</div>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <a href="{{ route('cashier.order.history') }}" class="btn btn-outline-secondary" style="border-radius:10px; padding:10px 20px; font-weight:600; border-color:#A4823B; color:#A4823B;">
-                <i class="bi bi-clock-history me-2"></i>
-                Order History
-            </a>
             <div class="text-end">
                 <div class="small text-muted">Total Unpaid Orders</div>
                 <div class="fw-bold" style="color:#A4823B; font-size:1.5rem;">{{ $orders->count() }}</div>
             </div>
+            <a href="{{ route('cashier.order.history') }}" class="btn btn-outline-secondary" style="border-radius:10px; padding:10px 20px; font-weight:600; border-color:#A4823B; color:#A4823B;">
+                <i class="bi bi-clock-history me-2"></i>
+                Order History
+            </a>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
     <div class="row g-3">
         @forelse($orders as $order)
@@ -146,32 +132,6 @@
                                     <label class="form-label fw-semibold">Payment Method</label>
                                     <div class="d-grid gap-2">
                                         <div class="form-check p-3" style="background:#F5F0E5; border-radius:10px; cursor:pointer;">
-                                            <input class="form-check-input" type="radio" name="method" id="cash{{ $order->id }}" value="cash" required>
-                                            <label class="form-check-label w-100" for="cash{{ $order->id }}" style="cursor:pointer;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi bi-cash-stack fs-4 me-3" style="color:#A4823B;"></i>
-                                                    <div>
-                                                        <div class="fw-semibold">Cash</div>
-                                                        <div class="small text-muted">Pay with physical money</div>
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check p-3" style="background:#F5F0E5; border-radius:10px; cursor:pointer;">
-                                            <input class="form-check-input" type="radio" name="method" id="card{{ $order->id }}" value="card" required>
-                                            <label class="form-check-label w-100" for="card{{ $order->id }}" style="cursor:pointer;">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="bi bi-credit-card fs-4 me-3" style="color:#A4823B;"></i>
-                                                    <div>
-                                                        <div class="fw-semibold">Card</div>
-                                                        <div class="small text-muted">Debit or Credit Card</div>
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check p-3" style="background:#F5F0E5; border-radius:10px; cursor:pointer;">
                                             <input class="form-check-input" type="radio" name="method" id="qris{{ $order->id }}" value="qris" required>
                                             <label class="form-check-label w-100" for="qris{{ $order->id }}" style="cursor:pointer;">
                                                 <div class="d-flex align-items-center">
@@ -179,6 +139,19 @@
                                                     <div>
                                                         <div class="fw-semibold">QRIS</div>
                                                         <div class="small text-muted">Scan QR Code</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check p-3" style="background:#F5F0E5; border-radius:10px; cursor:pointer;">
+                                            <input class="form-check-input" type="radio" name="method" id="cash{{ $order->id }}" value="cash" required>
+                                            <label class="form-check-label w-100" for="cash{{ $order->id }}" style="cursor:pointer;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bi bi-cash-stack fs-4 me-3" style="color:#A4823B;"></i>
+                                                    <div>
+                                                        <div class="fw-semibold">Cash</div>
+                                                        <div class="small text-muted">Pay with physical money</div>
                                                     </div>
                                                 </div>
                                             </label>

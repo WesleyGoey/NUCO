@@ -65,15 +65,12 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="d-flex align-items-center">
-                                        @if($order->payment->method === 'cash')
-                                            <i class="bi bi-cash-stack me-2" style="color:#A4823B;"></i>
-                                            <span>Cash</span>
-                                        @elseif($order->payment->method === 'card')
-                                            <i class="bi bi-credit-card me-2" style="color:#A4823B;"></i>
-                                            <span>Card</span>
-                                        @else
+                                        @if($order->payment->method === 'qris')
                                             <i class="bi bi-qr-code me-2" style="color:#A4823B;"></i>
                                             <span>QRIS</span>
+                                        @else
+                                            <i class="bi bi-cash-stack me-2" style="color:#A4823B;"></i>
+                                            <span>Cash</span>
                                         @endif
                                     </div>
                                 </td>
