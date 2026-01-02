@@ -27,7 +27,7 @@
 
                     <form method="POST" action="{{ route('owner.products.update', $product) }}" enctype="multipart/form-data">
                         @csrf
-                        @method('PUT')
+                        @method('PATCH')
 
                         <div class="row g-3">
                             <div class="col-12 col-md-6">

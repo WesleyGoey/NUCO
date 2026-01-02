@@ -32,9 +32,7 @@
                        class="btn btn-sm me-2 mb-2"
                        style="{{ $allActive ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
                         All
-                        <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
-                            {{ $totalProductsCount }}
-                        </span>
+                        <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">{{ $totalProductsCount }}</span>
                     </a>
 
                     @foreach($categories as $cat)
@@ -79,36 +77,42 @@
             <table class="table mb-0 align-middle">
                 <thead style="background:#F5F0E5;">
                     <tr>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">#</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Image</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Name</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Category</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Price</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Ingredients</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Status</th>
-                        <th class="px-4 py-3 text-center" style="color:#4b3028; font-weight:700;">Actions</th>
+                        <th class="px-3 py-3" style="color:#4b3028; font-weight:700; width:40px;">#</th>
+                        <th class="px-3 py-3" style="color:#4b3028; font-weight:700; width:70px;">Image</th>
+                        <th class="px-3 py-3" style="color:#4b3028; font-weight:700;">Product</th>
+                        <th class="px-3 py-3 text-center" style="color:#4b3028; font-weight:700; width:110px;">Category</th>
+                        <th class="px-3 py-3 text-end" style="color:#4b3028; font-weight:700; width:100px;">Price</th>
+                        <th class="px-3 py-3 text-center" style="color:#4b3028; font-weight:700; width:100px;">Recipe</th>
+                        <th class="px-3 py-3 text-center" style="color:#4b3028; font-weight:700; width:100px;">Status</th>
+                        <th class="px-3 py-3 text-center" style="color:#4b3028; font-weight:700; width:190px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($products as $index => $product)
                         <tr style="border-bottom:1px solid #E9E6E2;">
-                            <td class="px-4 py-3">{{ $products->firstItem() + $index }}</td>
-                            <td class="px-4 py-3">
+                            <td class="px-3 py-2">{{ $products->firstItem() + $index }}</td>
+                            
+                            {{-- Image --}}
+                            <td class="px-3 py-2">
                                 @if($product->image_path)
                                     <img src="{{ asset('storage/' . $product->image_path) }}" 
                                          alt="{{ $product->name }}"
-                                         style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
+                                         style="width:45px;height:45px;object-fit:cover;border-radius:8px;">
                                 @else
-                                    <div style="width:50px;height:50px;background:#F5F0E5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                                        <i class="bi bi-image" style="color:#A4823B;font-size:1.25rem;"></i>
+                                    <div style="width:45px;height:45px;background:#F5F0E5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                                        <i class="bi bi-image" style="color:#A4823B;font-size:1.1rem;"></i>
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="fw-semibold">{{ $product->name }}</div>
-                                <div class="small text-muted">{{ Str::limit($product->description, 40) }}</div>
+                            
+                            {{-- Product Name & Description (Reduced spacing) --}}
+                            <td class="px-3 py-2">
+                                <div class="fw-semibold text-truncate mb-1" style="max-width:250px;">{{ $product->name }}</div>
+                                <div class="small text-muted text-truncate" style="max-width:250px;">{{ Str::limit($product->description, 50) }}</div>
                             </td>
-                            <td class="px-4 py-3">
+                            
+                            {{-- Category Badge --}}
+                            <td class="px-3 py-2 text-center">
                                 @php
                                     $categoryColors = [
                                         'Main Course' => ['bg' => '#FFF4E6', 'text' => '#D68910'],
@@ -119,56 +123,70 @@
                                     $categoryName = $product->category->name ?? 'Other';
                                     $colors = $categoryColors[$categoryName] ?? ['bg' => '#E6F9EE', 'text' => '#2D7A3B'];
                                 @endphp
-                                <span class="badge" style="background:{{ $colors['bg'] }};color:{{ $colors['text'] }};font-weight:600;padding:6px 12px;border-radius:8px;">
+                                <span class="badge" style="background:{{ $colors['bg'] }};color:{{ $colors['text'] }};font-weight:600;padding:5px 10px;border-radius:6px;font-size:0.8rem;">
                                     {{ $product->category->name ?? '-' }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
-                                <span class="fw-bold" style="color:#A4823B;">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                            
+                            {{-- Price (Single Line) --}}
+                            <td class="px-3 py-2 text-end">
+                                <span class="fw-bold text-nowrap" style="color:#A4823B;">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </span>
                             </td>
-                            <td class="px-4 py-3">
+                            
+                            {{-- Ingredients Count --}}
+                            <td class="px-3 py-2 text-center">
                                 @php
                                     $ingredientCount = $product->ingredients()->count();
                                 @endphp
                                 @if($ingredientCount > 0)
-                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:6px 12px;border-radius:8px;">
-                                        <i class="bi bi-box-seam me-1"></i> {{ $ingredientCount }} items
+                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:5px 10px;border-radius:6px;font-size:0.8rem;">
+                                        <i class="bi bi-box-seam me-1"></i>{{ $ingredientCount }}
                                     </span>
                                 @else
-                                    <span class="badge" style="background:#F5F5F5;color:#9E9E9E;font-weight:600;padding:6px 12px;border-radius:8px;">
-                                        No recipe
+                                    <span class="badge" style="background:#F5F5F5;color:#9E9E9E;font-weight:600;padding:5px 10px;border-radius:6px;font-size:0.8rem;">
+                                        -
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3">
+                            
+                            {{-- Availability Status (Available/Unavailable) --}}
+                            <td class="px-3 py-2 text-center">
                                 @if($product->is_available)
-                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:6px 12px;border-radius:8px;">
+                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:5px 10px;border-radius:6px;font-size:0.8rem;white-space:nowrap;">
                                         Available
                                     </span>
                                 @else
-                                    <span class="badge" style="background:#FFECEC;color:#C0392B;font-weight:600;padding:6px 12px;border-radius:8px;">
+                                    <span class="badge" style="background:#FFECEC;color:#C0392B;font-weight:600;padding:5px 10px;border-radius:6px;font-size:0.8rem;white-space:nowrap;">
                                         Unavailable
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                            
+                            {{-- Actions (Compact Button Group - Single Line) --}}
+                            <td class="px-3 py-2">
+                                <div class="btn-group" role="group" style="white-space:nowrap;">
                                     <a href="{{ route('owner.products.recipe', $product) }}" 
                                        class="btn btn-sm" 
-                                       style="background:#2D7A3B;color:#F5F0E5;border-radius:8px;padding:6px 14px;font-weight:600;">
-                                        <i class="bi bi-card-list me-1"></i> Recipe
+                                       title="Recipe"
+                                       style="background:#2D7A3B;color:#F5F0E5;border-radius:6px 0 0 6px;padding:5px 10px;font-weight:600;">
+                                        <i class="bi bi-card-list"></i>
                                     </a>
                                     <a href="{{ route('owner.products.edit', $product) }}" 
                                        class="btn btn-sm" 
-                                       style="background:#A4823B;color:#F5F0E5;border-radius:8px;padding:6px 14px;font-weight:600;">
-                                        <i class="bi bi-pencil-square me-1"></i> Edit
+                                       title="Edit"
+                                       style="background:#A4823B;color:#F5F0E5;border-radius:0;padding:5px 10px;font-weight:600;">
+                                        <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <form action="{{ route('owner.products.destroy', $product) }}" method="POST" 
-                                          onsubmit="return confirm('Delete this product?');">
+                                          onsubmit="return confirm('Delete this product?');" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger" style="border-radius:8px;padding:6px 14px;font-weight:600;">
-                                            <i class="bi bi-trash me-1"></i> Delete
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                title="Delete"
+                                                style="border-radius:0 6px 6px 0;padding:5px 10px;font-weight:600;">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 </div>
