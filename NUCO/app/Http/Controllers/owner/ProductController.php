@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Ingredient;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -17,7 +18,7 @@ class ProductController extends Controller
         $search = $request->query('search', '');
         $selectedCategory = $request->query('category', '');
 
-        $query = Product::with('category');
+        $query = Product::with(['category', 'ingredients']);
 
         // Search filter
         if (!empty($search)) {
@@ -116,5 +117,39 @@ class ProductController extends Controller
 
         return redirect()->route('owner.products.index')
             ->with('success', 'Product deleted successfully!');
+    }
+
+    // Show recipe management page for a product
+    public function showRecipe(Product $product): View
+    {
+        $product->load(['ingredients', 'category']);
+        $allIngredients = Ingredient::orderBy('name')->get();
+        
+        return view('owner.products.recipe', compact('product', 'allIngredients'));
+    }
+
+    // Update product recipe (ingredients)
+    public function updateRecipe(Request $request, Product $product): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ingredients' => ['nullable', 'array'],
+            'ingredients.*.id' => ['required', 'exists:ingredients,id'],
+            'ingredients.*.amount' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        // Sync ingredients with amounts
+        if (!empty($validated['ingredients'])) {
+            $sync = [];
+            foreach ($validated['ingredients'] as $ing) {
+                $sync[$ing['id']] = ['amount_needed' => $ing['amount']];
+            }
+            $product->ingredients()->sync($sync);
+        } else {
+            // Clear all ingredients if array is empty
+            $product->ingredients()->sync([]);
+        }
+
+        return redirect()->route('owner.products.index')
+            ->with('success', "Recipe for {$product->name} updated successfully!");
     }
 }

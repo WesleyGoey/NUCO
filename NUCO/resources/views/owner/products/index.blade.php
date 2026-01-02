@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="mb-0 fw-bold" style="color:#4b3028;">Products Management</h3>
-            <div class="small text-muted">Manage menu & prices</div>
+            <div class="small text-muted">Manage menu, prices & recipes</div>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end">
@@ -84,6 +84,7 @@
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Name</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Category</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Price</th>
+                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Ingredients</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Status</th>
                         <th class="px-4 py-3 text-center" style="color:#4b3028; font-weight:700;">Actions</th>
                     </tr>
@@ -126,6 +127,20 @@
                                 <span class="fw-bold" style="color:#A4823B;">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-4 py-3">
+                                @php
+                                    $ingredientCount = $product->ingredients()->count();
+                                @endphp
+                                @if($ingredientCount > 0)
+                                    <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:6px 12px;border-radius:8px;">
+                                        <i class="bi bi-box-seam me-1"></i> {{ $ingredientCount }} items
+                                    </span>
+                                @else
+                                    <span class="badge" style="background:#F5F5F5;color:#9E9E9E;font-weight:600;padding:6px 12px;border-radius:8px;">
+                                        No recipe
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3">
                                 @if($product->is_available)
                                     <span class="badge" style="background:#E6F9EE;color:#2D7A3B;font-weight:600;padding:6px 12px;border-radius:8px;">
                                         Available
@@ -137,7 +152,12 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <div class="d-flex gap-2 justify-content-center">
+                                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                    <a href="{{ route('owner.products.recipe', $product) }}" 
+                                       class="btn btn-sm" 
+                                       style="background:#2D7A3B;color:#F5F0E5;border-radius:8px;padding:6px 14px;font-weight:600;">
+                                        <i class="bi bi-card-list me-1"></i> Recipe
+                                    </a>
                                     <a href="{{ route('owner.products.edit', $product) }}" 
                                        class="btn btn-sm" 
                                        style="background:#A4823B;color:#F5F0E5;border-radius:8px;padding:6px 14px;font-weight:600;">
@@ -156,7 +176,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
+                            <td colspan="8" class="text-center text-muted py-5">
                                 <i class="bi bi-inbox" style="font-size:2rem;color:#E9E6E2;"></i>
                                 <div class="mt-2">
                                     @if(!empty($search))

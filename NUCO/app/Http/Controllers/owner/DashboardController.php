@@ -31,8 +31,8 @@ class DashboardController extends Controller
 
         $cards = [
             ['title'=>'Users','route'=>'owner.users','key'=>'users','icon'=>'bi-people','desc'=>'Manage staff accounts'],
-            ['title'=>'Products','route'=>'owner.products.index','key'=>'products','icon'=>'bi-card-list','desc'=>'Manage menu & prices'],
-            ['title'=>'Inventory & Recipes','route'=>'owner.inventory.index','key'=>'ingredients','icon'=>'bi-box-seam','desc'=>'Stock & recipes'],
+            ['title'=>'Products & Recipes','route'=>'owner.products.index','key'=>'products','icon'=>'bi-card-list','desc'=>'Menu, prices & recipes'],
+            ['title'=>'Inventory & Ingredients','route'=>'owner.inventory.index','key'=>'ingredients','icon'=>'bi-box-seam','desc'=>'Manage stock & ingredients'],
             ['title'=>'Tables','route'=>'owner.tables.index','key'=>'tables','icon'=>'bi-table','desc'=>'Manage dining layout'],
             ['title'=>'Discounts','route'=>'owner.discounts.index','key'=>'discounts','icon'=>'bi-tag','desc'=>'Promos & periods'],
             ['title'=>'Orders','route'=>'orders','key'=>'orders','icon'=>'bi-basket','desc'=>'Realtime order monitor'],

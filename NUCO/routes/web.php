@@ -74,8 +74,9 @@ Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->gro
 });
 
 Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // Users
     Route::get('/users', [OwnerUserController::class, 'index'])->name('users');
     Route::get('/users/create', [OwnerUserController::class, 'create'])->name('users.create');
@@ -90,6 +91,22 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::get('/products/{product}/edit', [OwnerProductController::class, 'edit'])->name('products.edit');
     Route::patch('/products/{product}', [OwnerProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [OwnerProductController::class, 'destroy'])->name('products.destroy');
+    
+    // Product Recipe Management (Owner kelola recipe per product)
+    Route::get('/products/{product}/recipe', [OwnerProductController::class, 'showRecipe'])->name('products.recipe');
+    Route::post('/products/{product}/recipe', [OwnerProductController::class, 'updateRecipe'])->name('products.recipe.update');
+
+    // Inventory (Full CRUD untuk owner, kelola stok bahan baku)
+    Route::get('/inventory', [OwnerInventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory/create', [OwnerInventoryController::class, 'create'])->name('inventory.create');
+    Route::post('/inventory', [OwnerInventoryController::class, 'store'])->name('inventory.store');
+    Route::get('/inventory/{ingredient}/edit', [OwnerInventoryController::class, 'edit'])->name('inventory.edit');
+    Route::patch('/inventory/{ingredient}', [OwnerInventoryController::class, 'update'])->name('inventory.update');
+    Route::delete('/inventory/{ingredient}', [OwnerInventoryController::class, 'destroy'])->name('inventory.destroy');
+    
+    // Stock Update (Manual stock adjustment)
+    Route::get('/inventory/{ingredient}/stock', [OwnerInventoryController::class, 'showStockForm'])->name('inventory.stock');
+    Route::post('/inventory/{ingredient}/stock', [OwnerInventoryController::class, 'updateStock'])->name('inventory.stock.update');
 
     // Discounts
     Route::get('/discounts', [OwnerDiscountController::class, 'index'])->name('discounts.index');
