@@ -10,10 +10,8 @@ class PaymentController extends Controller
 {
     public function index(): View
     {
-        // ✅ CHANGED: Only total revenue, no breakdown
         $totalRevenue = Payment::where('status', 'success')->sum('amount');
         $totalTransactions = Payment::where('status', 'success')->count();
-        $pendingTransactions = Payment::where('status', 'pending')->count();
 
         // Transaction log (newest first)
         $payments = Payment::with(['order', 'user'])
@@ -23,7 +21,6 @@ class PaymentController extends Controller
         return view('owner.payments.index', compact(
             'totalRevenue',
             'totalTransactions',
-            'pendingTransactions',
             'payments'
         ));
     }

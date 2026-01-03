@@ -18,7 +18,7 @@
     {{-- Revenue Cards --}}
     <div class="row g-3 mb-4">
         {{-- Total Revenue --}}
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6">
             <div class="card shadow-sm border-0 h-100" style="border-radius:12px; border-left:4px solid #A4823B;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -37,7 +37,7 @@
         </div>
 
         {{-- Successful Transactions --}}
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6">
             <div class="card shadow-sm border-0 h-100" style="border-radius:12px; border-left:4px solid #2D7A3B;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -55,24 +55,7 @@
             </div>
         </div>
 
-        {{-- Pending Transactions --}}
-        <div class="col-12 col-md-4">
-            <div class="card shadow-sm border-0 h-100" style="border-radius:12px; border-left:4px solid #D68910;">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="small text-muted mb-1">Pending Payments</div>
-                            <div class="fw-bold" style="color:#D68910; font-size:1.5rem;">
-                                {{ $pendingTransactions }}
-                            </div>
-                        </div>
-                        <div style="width:48px;height:48px;border-radius:10px;background:#FFF4E6;display:flex;align-items:center;justify-content:center;">
-                            <i class="bi bi-clock-history" style="font-size:1.5rem;color:#D68910;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {{-- ✅ REMOVED: Pending Transactions Card --}}
     </div>
 
     {{-- Transaction Log --}}
