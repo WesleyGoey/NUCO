@@ -69,8 +69,12 @@ Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->g
 Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->group(function () {
     Route::get('/checkout', [CashierController::class, 'checkout'])->name('checkout');
     Route::post('/payment/process', [CashierController::class, 'processPayment'])->name('payment.process');
+    Route::post('/payment/cancel', [CashierController::class, 'cancelPayment'])->name('payment.cancel'); // ✅ ADDED
     Route::get('/order-history', [CashierController::class, 'orderHistory'])->name('order.history');
 });
+
+// ✅ Midtrans callback route (no auth middleware)
+Route::post('/midtrans/callback', [CashierController::class, 'handleCallback'])->name('midtrans.callback');
 
 Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
     // Dashboard
@@ -123,7 +127,6 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
 
     // Payments
     Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
-    Route::post('/payments/toggle', [OwnerPaymentController::class, 'toggleMethod'])->name('payments.toggle');
 
     // Reviews
     Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');

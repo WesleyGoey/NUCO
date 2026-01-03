@@ -15,12 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->integer('amount')->default(0);
-            $table->enum('method', ['qris', 'cash']);
-            $table->boolean('is_available')->default(true);
-            $table->timestamp('payment_time');
+            $table->decimal('amount', 15, 2)->default(0);
+            
+            $table->string('transaction_id')->unique();
+            $table->string('snap_token')->nullable(); // Midtrans snap token
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+            
+            $table->timestamp('payment_time')->nullable();
             $table->timestamps();
-        });
+        }); 
     }
 
     /**

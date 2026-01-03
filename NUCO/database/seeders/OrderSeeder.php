@@ -71,11 +71,16 @@ class OrderSeeder extends Seeder
 
             // create payment for completed orders
             if ($order->status === 'completed') {
+                // ✅ Generate unique transaction ID
+                $transactionId = 'ORDER-' . $order->id . '-' . $faker->unique()->numerify('######');
+                
                 Payment::create([
                     'order_id' => $order->id,
                     'user_id' => $user?->id,
                     'amount' => $total,
-                    'method' => $faker->randomElement(['qris', 'cash']),
+                    'transaction_id' => $transactionId,
+                    'snap_token' => null, // ✅ Seeding: no snap token
+                    'status' => 'success', // ✅ Assume success
                     'payment_time' => Carbon::now()->subMinutes(rand(0, 720)),
                 ]);
             }

@@ -33,9 +33,8 @@
                             <th class="px-4 py-3">Table</th>
                             <th class="px-4 py-3">Customer</th>
                             <th class="px-4 py-3">Items</th>
-                            <th class="px-4 py-3">Payment Method</th>
                             <th class="px-4 py-3">Cashier</th>
-                            <th class="px-4 py-3 text-end">Total</th>
+                            <th class="px-4 py-3 text-end">Total Paid</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,29 +57,24 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3">
-                                    {{ $order->order_name ?? ($order->user->username ?? '-') }}
+                                    {{ $order->order_name ?? 'No Name' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="badge bg-secondary">{{ $order->products->count() }} items</span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        @if($order->payment->method === 'qris')
-                                            <i class="bi bi-qr-code me-2" style="color:#A4823B;"></i>
-                                            <span>QRIS</span>
-                                        @else
-                                            <i class="bi bi-cash-stack me-2" style="color:#A4823B;"></i>
-                                            <span>Cash</span>
-                                        @endif
-                                    </div>
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ $order->payment->user->username ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-end">
                                     <span class="fw-bold" style="color:#A4823B;">
-                                        Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                        Rp {{ number_format($order->payment->amount, 0, ',', '.') }}
                                     </span>
+                                    
+                                    @if($order->discount)
+                                        <div class="small text-muted text-decoration-line-through">
+                                            Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                             <tr class="collapse" id="order-details-{{ $order->id }}">
@@ -112,6 +106,26 @@
                                                     @endif
                                                 </span>
                                             </div>
+                                            
+                                            <div class="mt-2">
+                                                <div class="small">
+                                                    <span class="text-muted">Subtotal:</span>
+                                                    <span class="fw-semibold ms-2">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                                                </div>
+                                                <div class="small text-success">
+                                                    <span>Discount:</span>
+                                                    <span class="fw-semibold ms-2">
+                                                        - Rp {{ number_format($order->total_price - $order->payment->amount, 0, ',', '.') }}
+                                                    </span>
+                                                </div>
+                                                <hr class="my-1">
+                                                <div class="small fw-bold">
+                                                    <span>Total Paid:</span>
+                                                    <span class="ms-2" style="color:#A4823B;">
+                                                        Rp {{ number_format($order->payment->amount, 0, ',', '.') }}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         @endif
                                     </div>
                                 </td>
@@ -130,7 +144,6 @@
         </div>
     </div>
 
-    <!-- Pagination -->
     @if($orders->hasPages())
         <div class="d-flex justify-content-center mt-4">
             {{ $orders->links() }}
@@ -139,12 +152,10 @@
 </div>
 
 <style>
-/* Hover effect for expandable rows */
 tbody tr[data-bs-toggle]:hover {
     background-color: #F9F9F9;
 }
 
-/* Custom pagination styling */
 .pagination {
     gap: 0.5rem;
 }

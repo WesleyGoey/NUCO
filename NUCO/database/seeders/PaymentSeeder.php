@@ -23,12 +23,16 @@ class PaymentSeeder extends Seeder
                 continue;
             }
 
+            // ✅ Generate unique transaction ID
+            $transactionId = 'ORDER-' . $order->id . '-' . $faker->unique()->numerify('######');
+
             Payment::create([
                 'order_id' => $order->id,
                 'user_id' => $cashiers->isNotEmpty() ? $cashiers->random()->id : null,
                 'amount' => $order->total_price ?? 0,
-                'method' => $faker->randomElement(['qris', 'cash']),
-                'is_available' => true,
+                'transaction_id' => $transactionId,                         // ✅ ADDED
+                'snap_token' => null, // ✅ Seeding: no snap token
+                'status' => 'success', // ✅ Assume success for seeding
                 'payment_time' => Carbon::now()->subMinutes(rand(0, 1000)),
             ]);
         }

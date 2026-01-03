@@ -14,13 +14,13 @@ class Payment extends Model
         'order_id',
         'user_id',
         'amount',
-        'method',
-        'is_available',
+        'transaction_id',
+        'snap_token',      // ✅ ADDED
+        'status',          // ✅ ADDED
         'payment_time'
     ];
 
     protected $casts = [
-        'is_available' => 'boolean',
         'payment_time' => 'datetime'
     ];
 

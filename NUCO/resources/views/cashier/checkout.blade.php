@@ -6,7 +6,7 @@
 <div class="container-xl py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="mb-0 fw-bold">Checkout</h3>
+            <h3 class="mb-0 fw-bold" style="color:#4b3028;">Checkout</h3>
             <div class="small text-muted">Process payments for unpaid orders</div>
         </div>
         <div class="d-flex align-items-center gap-3">
@@ -21,80 +21,69 @@
         </div>
     </div>
 
+    {{-- Success/Error Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert" style="border-radius:10px;">
+            <i class="bi bi-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert" style="border-radius:10px;">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <div class="row g-3">
         @forelse($orders as $order)
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm border-0" style="border-radius:14px; overflow:hidden;">
-                    <div class="card-body d-flex flex-column">
-                        <!-- Order Header -->
+                    <div class="card-body p-3">
+                        {{-- Header --}}
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
-                                <h5 class="fw-bold mb-1">Order #{{ $order->id }}</h5>
-                                <div class="small text-muted">
-                                    {{ $order->created_at->format('d M Y, H:i') }}
-                                </div>
+                                <h5 class="mb-1 fw-bold" style="color:#A4823B;">Order #{{ $order->id }}</h5>
+                                <div class="small text-muted">{{ $order->created_at->format('d M Y, H:i') }}</div>
                             </div>
-                            <span class="badge" style="background: {{ $order->status === 'completed' ? '#E6F9EE' : '#FFF4E6' }}; color: {{ $order->status === 'completed' ? '#2D7A3B' : '#D68910' }}; padding:6px 12px; border-radius:8px; font-weight:700;">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                        </div>
-
-                        <!-- Table & Customer Info -->
-                        <div class="mb-3 pb-3 border-bottom">
                             @if($order->table)
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-table me-2" style="color:#A4823B;"></i>
-                                    <span class="fw-semibold">Table {{ $order->table->table_number }}</span>
-                                </div>
-                            @endif
-                            @if($order->order_name || $order->user)
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-person me-2" style="color:#A4823B;"></i>
-                                    <span class="small">{{ $order->order_name ?? ($order->user->username ?? '-') }}</span>
-                                </div>
+                                <span class="badge" style="background:#F5F0E5; color:#A4823B; padding:6px 12px; border-radius:8px; font-weight:700;">
+                                    Table {{ $order->table->table_number }}
+                                </span>
                             @endif
                         </div>
 
-                        <!-- Order Items -->
+                        {{-- Customer (using order_name) --}}
                         <div class="mb-3">
-                            <div class="fw-semibold mb-2 small text-muted">ITEMS ({{ $order->products->count() }})</div>
-                            <div class="small" style="max-height:120px; overflow-y:auto;">
+                            <div class="small text-muted mb-1">Customer</div>
+                            {{-- ✅ CHANGED: Display order_name only --}}
+                            <div class="fw-semibold">{{ $order->order_name ?? 'No Name' }}</div>
+                        </div>
+
+                        {{-- Items --}}
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">Items</div>
+                            <div class="d-flex flex-wrap gap-1">
                                 @foreach($order->products as $product)
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-truncate me-2">{{ $product->name }} x{{ $product->pivot->quantity }}</span>
-                                        <span class="text-nowrap">Rp {{ number_format($product->pivot->subtotal, 0, ',', '.') }}</span>
-                                    </div>
+                                    <span class="badge bg-secondary">{{ $product->name }} ({{ $product->pivot->quantity }}x)</span>
                                 @endforeach
                             </div>
                         </div>
 
-                        <!-- Discount Info (if already applied) -->
-                        @if($order->discount)
-                            <div class="mb-3 p-2" style="background:#FFF9E6; border-radius:8px;">
-                                <div class="small d-flex align-items-center">
-                                    <i class="bi bi-tag-fill me-2" style="color:#D68910;"></i>
-                                    <span class="fw-semibold">{{ $order->discount->name }}</span>
-                                </div>
-                                <div class="small text-muted ms-4">
-                                    @if($order->discount->type === 'percent')
-                                        {{ $order->discount->value }}% off
-                                    @else
-                                        Rp {{ number_format($order->discount->value, 0, ',', '.') }} off
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
+                        {{-- Total --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Total</span>
+                            <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
+                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                            </span>
+                        </div>
 
-                        <!-- Total Amount -->
-                        <div class="mt-auto pt-3 border-top">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="fw-bold">Total Amount</span>
-                                <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
-                                    Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                                </span>
-                            </div>
-
-                            <!-- Payment Button -->
+                        {{-- Action Button (only Process Payment, no Cancel) --}}
+                        <div class="d-grid">
+                            {{-- Payment Button --}}
                             <button type="button" class="btn w-100" 
                                     style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;"
                                     data-bs-toggle="modal" 
@@ -107,7 +96,7 @@
                 </div>
             </div>
 
-            <!-- Payment Modal -->
+            {{-- Payment Modal --}}
             <div class="modal fade" id="paymentModal{{ $order->id }}" tabindex="-1" aria-labelledby="paymentModalLabel{{ $order->id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content" style="border-radius:14px; border:none;">
@@ -115,88 +104,80 @@
                             <h5 class="modal-title fw-bold" id="paymentModalLabel{{ $order->id }}">Process Payment</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form method="POST" action="{{ route('cashier.payment.process') }}" id="paymentForm{{ $order->id }}">
-                            @csrf
-                            <input type="hidden" name="order_id" value="{{ $order->id }}">
-                            <input type="hidden" name="amount" id="finalAmount{{ $order->id }}" value="{{ $order->total_price }}">
-                            
-                            <div class="modal-body p-4">
-                                <div class="mb-3">
-                                    <div class="small text-muted mb-1">Order #{{ $order->id }}</div>
-                                    <div class="fw-bold" style="font-size:1.5rem; color:#A4823B;">
-                                        Rp <span id="displayAmount{{ $order->id }}">{{ number_format($order->total_price, 0, ',', '.') }}</span>
-                                    </div>
+                        <div class="modal-body p-4">
+                            {{-- Order Summary --}}
+                            <div class="mb-3">
+                                <div class="small text-muted mb-1">Order #{{ $order->id }}</div>
+                                <div class="fw-bold" style="color:#A4823B; font-size:1.5rem;">
+                                    Rp {{ number_format($order->total_price, 0, ',', '.') }}
                                 </div>
-
-                                <!-- Discount Selection -->
-                                <div class="mb-3">
-                                    <label for="discount{{ $order->id }}" class="form-label fw-bold" style="color:#4b3028;">Apply Discount (Optional)</label>
-                                    <select name="discount_id" id="discount{{ $order->id }}" class="form-select" style="border-radius:10px; padding:10px;">
-                                        <option value="">No Discount</option>
-                                        @foreach($activeDiscounts as $disc)
-                                            <option value="{{ $disc->id }}">
-                                                {{ $disc->name }} 
-                                                @if($disc->type === 'percent')
-                                                    ({{ $disc->value }}%)
-                                                @else
-                                                    (Rp {{ number_format($disc->value, 0, ',', '.') }})
-                                                @endif
-                                                @if($disc->min_order_amount)
-                                                    - Min: Rp {{ number_format($disc->min_order_amount, 0, ',', '.') }}
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <!-- Payment Method Selection -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color:#4b3028;">Payment Method</label>
-                                    <div class="d-grid gap-2">
-                                        <div class="form-check p-3" style="background:#F9F9F9; border-radius:10px; border:1px solid #E9E6E2;">
-                                            <input class="form-check-input" type="radio" name="method" id="qris{{ $order->id }}" value="qris" required>
-                                            <label class="form-check-label d-flex align-items-center justify-content-between w-100" for="qris{{ $order->id }}">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="bi bi-qr-code" style="font-size:1.25rem; color:#2D7A3B;"></i>
-                                                    <span class="fw-semibold">QRIS</span>
-                                                </div>
-                                                <i class="bi bi-check-circle-fill" style="color:#2D7A3B; display:none;"></i>
-                                            </label>
-                                        </div>
-
-                                        <div class="form-check p-3" style="background:#F9F9F9; border-radius:10px; border:1px solid #E9E6E2;">
-                                            <input class="form-check-input" type="radio" name="method" id="cash{{ $order->id }}" value="cash" required>
-                                            <label class="form-check-label d-flex align-items-center justify-content-between w-100" for="cash{{ $order->id }}">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="bi bi-cash-stack" style="font-size:1.25rem; color:#D68910;"></i>
-                                                    <span class="fw-semibold">Cash</span>
-                                                </div>
-                                                <i class="bi bi-check-circle-fill" style="color:#D68910; display:none;"></i>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <button type="submit" class="btn w-100" style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;">
-                                    <i class="bi bi-credit-card me-2"></i>
-                                    Process Payment
-                                </button>
                             </div>
-                        </form>
+
+                            {{-- Discount Selection --}}
+                            <div class="mb-3">
+                                <label for="discount{{ $order->id }}" class="form-label fw-bold" style="color:#4b3028;">Apply Discount (Optional)</label>
+                                <select name="discount_id" id="discount{{ $order->id }}" class="form-select discount-select" style="border-radius:10px; padding:10px;" data-order-id="{{ $order->id }}" data-order-total="{{ $order->total_price }}">
+                                    <option value="">No Discount</option>
+                                    @foreach($activeDiscounts as $disc)
+                                        <option value="{{ $disc->id }}" 
+                                                data-type="{{ $disc->type }}" 
+                                                data-value="{{ $disc->value }}"
+                                                data-min="{{ $disc->min_order_amount ?? 0 }}">
+                                            {{ $disc->name }} 
+                                            @if($disc->type === 'percent')
+                                                ({{ $disc->value }}%)
+                                            @else
+                                                (Rp {{ number_format($disc->value, 0, ',', '.') }})
+                                            @endif
+                                            @if($disc->min_order_amount)
+                                                - Min: Rp {{ number_format($disc->min_order_amount, 0, ',', '.') }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Price Breakdown --}}
+                            <div class="card" style="background:#F9F9F9; border:1px solid #E9E6E2; border-radius:10px;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Subtotal</span>
+                                        <span class="fw-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2" id="discount-row-{{ $order->id }}" style="display:none !important;">
+                                        <span class="text-success">Discount</span>
+                                        <span class="text-success fw-semibold" id="discount-amount-{{ $order->id }}">- Rp 0</span>
+                                    </div>
+                                    <hr style="margin:8px 0;">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Total</span>
+                                        <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;" id="final-total-{{ $order->id }}">
+                                            Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Submit Button --}}
+                            <button type="button" class="btn w-100 mt-3 pay-btn" 
+                                    data-order-id="{{ $order->id }}"
+                                    style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;">
+                                <i class="bi bi-credit-card me-2"></i>
+                                Pay with Midtrans
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {{-- ✅ REMOVED: Cancel Modal dihapus --}}
+
         @empty
             <div class="col-12">
                 <div class="card shadow-sm border-0" style="border-radius:14px;">
                     <div class="card-body text-center py-5">
-                        <i class="bi bi-check-circle" style="font-size:4rem; color:#2D7A3B;"></i>
-                        <h5 class="mt-3 mb-2">All Orders Paid!</h5>
-                        <p class="text-muted">There are no unpaid orders at the moment.</p>
-                        <a href="{{ route('cashier.order.history') }}" class="btn" style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:10px 20px; font-weight:600;">
-                            View Order History
-                        </a>
+                        <i class="bi bi-inbox" style="font-size:3rem; color:#D0D0D0;"></i>
+                        <div class="mt-3 text-muted">No unpaid orders at the moment.</div>
                     </div>
                 </div>
             </div>
@@ -204,23 +185,159 @@
     </div>
 </div>
 
-<style>
-/* Enhance radio button hover effect */
-.form-check:has(.form-check-input:checked) {
-    background: #A4823B !important;
-}
+{{-- ✅ Midtrans Snap Script --}}
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-.form-check:has(.form-check-input:checked) label,
-.form-check:has(.form-check-input:checked) .text-muted {
-    color: #F5F0E5 !important;
-}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Store current payment ID for cancellation
+    let currentPaymentId = null;
 
-.form-check:has(.form-check-input:checked) i {
-    color: #F5F0E5 !important;
-}
+    // Discount selection real-time calculation
+    document.querySelectorAll('.discount-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const orderTotal = parseFloat(this.getAttribute('data-order-total'));
+            const selectedOption = this.options[this.selectedIndex];
+            
+            const discountRow = document.getElementById(`discount-row-${orderId}`);
+            const discountAmount = document.getElementById(`discount-amount-${orderId}`);
+            const finalTotal = document.getElementById(`final-total-${orderId}`);
+            
+            if (this.value) {
+                const discountType = selectedOption.getAttribute('data-type');
+                const discountValue = parseFloat(selectedOption.getAttribute('data-value'));
+                const minAmount = parseFloat(selectedOption.getAttribute('data-min') || 0);
+                
+                // Check minimum order amount
+                if (minAmount > 0 && orderTotal < minAmount) {
+                    alert(`Minimum order amount is Rp ${minAmount.toLocaleString('id-ID')}`);
+                    this.value = '';
+                    discountRow.style.display = 'none';
+                    finalTotal.textContent = `Rp ${orderTotal.toLocaleString('id-ID')}`;
+                    return;
+                }
+                
+                let discount = 0;
+                if (discountType === 'percent') {
+                    discount = (orderTotal * discountValue) / 100;
+                } else {
+                    discount = discountValue;
+                }
+                
+                const final = orderTotal - discount;
+                
+                discountRow.style.display = 'flex';
+                discountAmount.textContent = `- Rp ${discount.toLocaleString('id-ID')}`;
+                finalTotal.textContent = `Rp ${final.toLocaleString('id-ID')}`;
+            } else {
+                discountRow.style.display = 'none';
+                finalTotal.textContent = `Rp ${orderTotal.toLocaleString('id-ID')}`;
+            }
+        });
+    });
 
-.form-check:hover {
-    background: #E9E6E2 !important;
-}
-</style>
+    // ✅ Handle payment button click
+    document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const discountSelect = document.querySelector(`#discount${orderId}`);
+            const discountId = discountSelect ? discountSelect.value : '';
+
+            // Disable button
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+            // Send request to backend
+            fetch('{{ route("cashier.payment.process") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    discount_id: discountId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ Store payment ID
+                    currentPaymentId = data.payment_id;
+
+                    // Open Midtrans Snap popup
+                    snap.pay(data.snap_token, {
+                        onSuccess: function(result) {
+                            currentPaymentId = null; // ✅ Clear payment ID
+                            alert('Payment success!');
+                            window.location.reload();
+                        },
+                        onPending: function(result) {
+                            currentPaymentId = null; // ✅ Clear payment ID
+                            alert('Payment pending. Please complete payment.');
+                            window.location.reload();
+                        },
+                        onError: function(result) {
+                            currentPaymentId = null; // ✅ Clear payment ID
+                            alert('Payment failed!');
+                            window.location.reload();
+                        },
+                        // ✅ FIXED: Cancel payment when closing popup
+                        onClose: function() {
+                            if (currentPaymentId) {
+                                // Delete pending payment
+                                fetch('{{ route("cashier.payment.cancel") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({
+                                        payment_id: currentPaymentId
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Payment cancelled:', data);
+                                    currentPaymentId = null;
+                                    
+                                    // Re-enable button
+                                    const btn = document.querySelector(`[data-order-id="${orderId}"]`);
+                                    if (btn) {
+                                        btn.disabled = false;
+                                        btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Cancel error:', error);
+                                    window.location.reload();
+                                });
+                            } else {
+                                // Re-enable button if no payment was created
+                                const btn = document.querySelector(`[data-order-id="${orderId}"]`);
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    alert(data.message || 'Failed to process payment');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
+            });
+        });
+    });
+});
+</script>
 @endsection
