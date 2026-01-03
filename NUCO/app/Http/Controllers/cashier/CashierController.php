@@ -28,13 +28,13 @@ class CashierController extends Controller
         $today = now()->toDateString();
         $activeDiscounts = Discount::with(['periods' => function($q) use ($today) {
             $q->whereDate('start_date', '<=', $today)
-              ->where(function($q2) use ($today) {
+              ->where(function ($q2) use ($today) {
                   $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
               });
         }])
         ->whereHas('periods', function($q) use ($today) {
             $q->whereDate('start_date', '<=', $today)
-              ->where(function($q2) use ($today) {
+              ->where(function ($q2) use ($today) {
                   $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
               });
         })
@@ -67,60 +67,49 @@ class CashierController extends Controller
         $request->validate([
             'order_id' => 'required|exists:orders,id',
             'method' => 'required|in:qris,cash',
-            'amount' => 'required|numeric|min:0',
-            'discount_id' => 'nullable|exists:discounts,id', // ✅ NEW: optional discount
+            'discount_id' => 'nullable|exists:discounts,id',
         ]);
 
         $cashierId = $request->user()->id;
         $order = Order::findOrFail($request->order_id);
 
         if ($order->payment()->exists()) {
-            return back()->with('error', 'This order has already been paid.');
+            return back()->with('error', 'Payment already processed for this order!');
         }
 
         DB::transaction(function () use ($request, $order, $cashierId) {
-            // ✅ Apply discount if provided
-            $finalAmount = $request->amount;
-            $discountId = $request->discount_id;
+            $finalAmount = $order->total_price;
 
-            if ($discountId) {
-                $discount = Discount::find($discountId);
-                
+            // ✅ Apply discount if selected
+            if ($request->discount_id) {
+                $discount = Discount::find($request->discount_id);
                 if ($discount) {
-                    // Check minimum order requirement
-                    if ($discount->min_order_amount && $order->total_price < $discount->min_order_amount) {
-                        throw new \Exception("Order does not meet minimum amount for this discount (Rp " . number_format($discount->min_order_amount, 0, ',', '.') . ")");
-                    }
-
-                    // Calculate discount
                     if ($discount->type === 'percent') {
-                        $discountAmount = ($order->total_price * $discount->value) / 100;
+                        $discountValue = ($order->total_price * $discount->value) / 100;
                     } else {
-                        $discountAmount = $discount->value;
+                        $discountValue = $discount->value;
                     }
-
-                    $finalAmount = max(0, $order->total_price - $discountAmount);
-
-                    // Update order with discount
-                    $order->update([
-                        'discount_id' => $discountId,
-                        'total_price' => $finalAmount,
-                    ]);
+                    $finalAmount -= $discountValue;
+                    $order->update(['discount_id' => $discount->id]);
                 }
             }
 
-            // Create payment
+            // Create payment record
             Payment::create([
                 'order_id' => $order->id,
                 'user_id' => $cashierId,
                 'amount' => $finalAmount,
                 'method' => $request->method,
+                'is_available' => true,
                 'payment_time' => now(),
             ]);
 
-            // Mark order as completed
-            if ($order->status !== 'completed') {
-                $order->update(['status' => 'completed']);
+            // Update order status to completed
+            $order->update(['status' => 'completed']);
+
+            // Release table
+            if ($order->table) {
+                $order->table->update(['status' => 'available']);
             }
         });
 

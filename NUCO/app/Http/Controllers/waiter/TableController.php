@@ -10,9 +10,14 @@ use Illuminate\Http\RedirectResponse;
 
 class TableController extends Controller
 {
+    /**
+     * Display a listing of restaurant tables (owner management)
+     */
     public function index(Request $request): View
     {
-        $tables = RestaurantTable::orderByRaw('CAST(table_number AS UNSIGNED)')->orderBy('table_number')->get();
+        $tables = RestaurantTable::orderByRaw('CAST(table_number AS UNSIGNED)')
+            ->orderBy('table_number')
+            ->get();
 
         // pass selected table id (if any) so view can mark selected table
         $selectedId = session('selected_table.id') ?? null;
@@ -57,8 +62,8 @@ class TableController extends Controller
             }
         }
 
-        // Clear cart and selected table from session
-        session()->forget(['waiter_cart', 'selected_table']);
+        // ✅ FIX: Clear cart and selected table from session (use 'cart' not 'waiter_cart')
+        session()->forget(['cart', 'selected_table']);
 
         return redirect()->route('waiter.tables');
     }

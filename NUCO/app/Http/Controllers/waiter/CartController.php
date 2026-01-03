@@ -22,6 +22,12 @@ class CartController extends Controller
         $cart = session('cart', []);
         $selectedTable = session('selected_table');
 
+        // ✅ Calculate total products count
+        $totalProductsCount = Category::with('products')->get()->sum(fn($c) => $c->products->where('is_available', 1)->count());
+        
+        // ✅ Get all categories for filter buttons
+        $allCategoriesForButtons = Category::orderBy('id')->get();
+
         $categories = Category::with(['products' => function($q) use ($search) {
             $q->where('is_available', 1)->orderBy('id', 'asc');
             if (!empty($search)) {
@@ -41,7 +47,7 @@ class CartController extends Controller
             }
             $c->products = $query->get();
 
-            // ✅ NEW: set in_stock per product
+            // Check ingredient stocks
             $c->products->load('ingredients');
             foreach ($c->products as $p) {
                 if ($p->ingredients->isEmpty()) {
@@ -57,12 +63,9 @@ class CartController extends Controller
                 }
                 $p->in_stock = $ok;
             }
-            // ✅ END NEW
 
             $c->count = $c->products->count();
         }
-
-        $allCategoriesForButtons = Category::orderBy('id')->get();
 
         return view('waiter.cart', compact(
             'cart',
@@ -70,7 +73,8 @@ class CartController extends Controller
             'categories',
             'search',
             'selectedCategoryId',
-            'allCategoriesForButtons'
+            'allCategoriesForButtons',
+            'totalProductsCount'
         ));
     }
 
@@ -106,6 +110,7 @@ class CartController extends Controller
         return back()->with('success', "{$product->name} added to cart!");
     }
 
+    // ✅ CORRECT: updateQuantity() method is COMPLETE
     public function updateQuantity(Request $request): RedirectResponse
     {
         $request->validate([
@@ -124,6 +129,7 @@ class CartController extends Controller
             $cart[$productId]['quantity'] += 1;
         } elseif ($request->action === 'decrease') {
             $cart[$productId]['quantity'] -= 1;
+            
             if ($cart[$productId]['quantity'] <= 0) {
                 unset($cart[$productId]);
                 session(['cart' => $cart]);
@@ -172,6 +178,12 @@ class CartController extends Controller
         return back()->with('error', 'Product not found in cart.');
     }
 
+    public function clear(): RedirectResponse
+    {
+        session()->forget('cart');
+        return back()->with('success', 'Cart cleared successfully!');
+    }
+
     public function checkout(Request $request): RedirectResponse
     {
         $cart = session('cart', []);
@@ -198,15 +210,15 @@ class CartController extends Controller
         $order = Order::create([
             'restaurant_table_id' => $table->id,
             'user_id' => $userId,
-            'total_amount' => $totalAmount,
+            'total_price' => $totalAmount,
             'status' => 'pending',
         ]);
 
         foreach ($cart as $item) {
             $order->products()->attach($item['id'], [
                 'quantity' => $item['quantity'],
-                'price_at_order' => $item['price'],
-                'notes' => $item['notes'] ?? null,
+                'subtotal' => $item['subtotal'],
+                'note' => $item['notes'] ?? null,
             ]);
         }
 

@@ -13,59 +13,51 @@
 </head>
 <body style="background:#F5F0E5; min-height:100vh; margin:0;">
 
+@includeIf('layouts.navigation-waiter')
+
 @php
     $selectedTable = session('selected_table') ?? null;
-    $cart = session('waiter_cart', []);
+    $cart = session('cart', []);
     $cartCount = array_sum(array_map(fn($i)=>(int)($i['quantity'] ?? 0), $cart ?: []));
     $cartTotal = array_sum(array_map(fn($i)=>(int)($i['subtotal'] ?? 0), $cart ?: []));
 @endphp
 
 <div class="container-xl py-4">
-   {{-- Header & Search --}}
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <h4 class="m-0 fw-bold">Menu & Cart</h4>
-                    <div class="text-muted small">
-                        @if($selectedTable)
-                            Table {{ $selectedTable['table_number'] }} • {{ $cartCount }} items in cart
-                        @else
-                            No table selected
-                        @endif
-                    </div>
-                </div>
-
-                <div class="ms-3" style="min-width:220px; max-width:420px;">
-                    <form method="GET" action="{{ route('waiter.cart') }}" class="d-flex">
-                        @if(!empty($selectedCategory))
-                            <input type="hidden" name="category" value="{{ $selectedCategory }}">
-                        @endif
-                        <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
-                               placeholder="Search menu..." style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;" />
-                        <button type="submit" class="btn btn-sm ms-2"
-                                style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:600;">
-                            Search
-                        </button>
-                    </form>
-                </div>
+   {{-- Header --}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="m-0 fw-bold">Menu & Cart</h4>
+            <div class="text-muted small">
+                @if($selectedTable)
+                    Table {{ $selectedTable['table_number'] }} • {{ $cartCount }} items in cart
+                @else
+                    No table selected
+                @endif
             </div>
+        </div>
+    </div>
 
-            {{-- Category Filter Buttons --}}
-            <div class="overflow-auto py-2" style="white-space:nowrap; -webkit-overflow-scrolling:touch;">
-                @php $allActive = empty($selectedCategory); @endphp
+    {{-- ✅ FIXED: Search & Filter sejajar TANPA card background --}}
+    <div class="mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            
+            {{-- Category Filters (kiri, scrollable) --}}
+            <div class="overflow-auto" style="white-space:nowrap; -webkit-overflow-scrolling:touch; flex:1;">
+                @php $allActive = empty($selectedCategoryId); @endphp
                 <a href="{{ route('waiter.cart', ['search' => $search ?? '']) }}"
                    class="btn btn-sm me-2 mb-2"
                    style="{{ $allActive ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
                     All
-                    <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">{{ $totalProductsCount }}</span>
+                    <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
+                        {{ $totalProductsCount }}
+                    </span>
                 </a>
 
-                @foreach($allCategories as $cat)
+                @foreach($allCategoriesForButtons as $cat)
                     @php
                         $catId = (string) $cat->id;
-                        $active = !empty($selectedCategory) && (string)$selectedCategory === $catId;
-                        $productCount = $cat->products()->count();
+                        $active = !empty($selectedCategoryId) && (string)$selectedCategoryId === $catId;
+                        $productCount = $cat->products()->where('is_available', 1)->count();
                     @endphp
                     <a href="{{ route('waiter.cart', ['category' => $catId, 'search' => $search ?? '']) }}"
                        class="btn btn-sm me-2 mb-2"
@@ -77,6 +69,22 @@
                     </a>
                 @endforeach
             </div>
+
+            {{-- Search Box (kanan) --}}
+            <div style="min-width:260px;">
+                <form method="GET" action="{{ route('waiter.cart') }}" class="d-flex">
+                    @if(!empty($selectedCategoryId))
+                        <input type="hidden" name="category" value="{{ $selectedCategoryId }}">
+                    @endif
+                    <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
+                           placeholder="Search menu..." 
+                           style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;background:#ffffff;" />
+                    <button type="submit" class="btn btn-sm ms-2"
+                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:600;">
+                        Search
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -85,9 +93,7 @@
         {{-- LEFT: Menu Products (2/3) --}}
         <div class="col-12 col-lg-8">
             @php
-                $totalDisplayed = $categories->sum(function($c) {
-                    return isset($c->products) ? $c->products->count() : 0;
-                });
+                $totalDisplayed = $categories->sum(fn($c) => $c->products->count());
             @endphp
 
             @if ($totalDisplayed === 0)
@@ -103,7 +109,7 @@
                 </div>
             @else
                 @foreach($categories as $category)
-                    @if(empty($category->products) || $category->products->isEmpty())
+                    @if($category->products->isEmpty())
                         @continue
                     @endif
 
@@ -112,7 +118,7 @@
                         <div class="row g-3">
                             @foreach($category->products as $product)
                                 <div class="col-12 col-sm-6 col-md-4">
-                                    {{-- Product Card (inline) --}}
+                                    {{-- Product Card --}}
                                     <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
                                         <div style="border-radius:12px 12px 0 0; overflow:hidden;">
                                             <div class="ratio ratio-4x3">
@@ -138,7 +144,7 @@
                                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                                 </div>
 
-                                                {{-- ✅ UPDATED: Check both is_available and in_stock --}}
+                                                {{-- ✅ Check stock availability --}}
                                                 @if(!empty($product->is_available) && $product->is_available && ($product->in_stock ?? true))
                                                     <form method="POST" action="{{ route('waiter.cart.add') }}" class="d-inline">
                                                         @csrf
@@ -172,6 +178,9 @@
                         Table {{ $selectedTable['table_number'] ?? '-' }} • {{ $cartCount }} items
                     </div>
 
+                    <hr>
+
+                    {{-- Cart Items --}}
                     <div class="overflow-auto" style="max-height:500px;">
                         @if(empty($cart))
                             <div class="text-center text-muted py-4">
@@ -182,10 +191,11 @@
                             <div class="list-group mb-3">
                                 @foreach($cart as $item)
                                     <div class="list-group-item border-0 p-3 mb-2" style="background:#F9F9F9; border-radius:8px;">
+                                        {{-- Product Name & Price --}}
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div class="flex-grow-1 me-2">
-                                                <div class="fw-bold">{{ $item['name'] }}</div>
-                                                <div class="small text-muted">Rp {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</div>
+                                                <div class="fw-bold mb-1">{{ $item['name'] }}</div>
+                                                <div class="small text-muted">Rp {{ number_format($item['price'] ?? 0, 0, ',', '.') }} × {{ $item['quantity'] ?? 1 }}</div>
                                             </div>
                                             <div class="text-end">
                                                 <div class="fw-bold" style="color:#A4823B;">
@@ -198,52 +208,55 @@
                                         <div class="mb-2">
                                             <form method="POST" action="{{ route('waiter.cart.update-note') }}" class="d-flex gap-2">
                                                 @csrf
-                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                <input type="text" name="note" 
-                                                       value="{{ $item['note'] ?? '' }}" 
+                                                <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                                <input type="text" name="notes"
+                                                       value="{{ $item['notes'] ?? '' }}" 
                                                        class="form-control form-control-sm" 
                                                        placeholder="Add note (e.g., no spicy)..."
-                                                       style="border-radius:6px; font-size:0.85rem;">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" 
-                                                        style="border-radius:6px; padding:4px 8px;">
-                                                    <i class="bi bi-check"></i>
+                                                       style="border-radius:6px; font-size:0.85rem; border:1px solid #E9E6E2;">
+                                                <button type="submit" class="btn btn-sm" 
+                                                        style="background:#A4823B; color:#F5F0E5; border-radius:6px; padding:4px 10px; border:none;">
+                                                    <i class="bi bi-check-lg"></i>
                                                 </button>
                                             </form>
                                         </div>
 
-                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                        {{-- Quantity Controls & Delete --}}
+                                        <div class="d-flex align-items-center justify-content-between">
                                             {{-- Quantity Controls --}}
                                             <div class="d-flex align-items-center gap-2">
                                                 <form method="POST" action="{{ route('waiter.cart.update') }}" class="d-inline">
                                                     @csrf
-                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                    <input type="hidden" name="quantity" value="{{ max(1, ($item['quantity'] ?? 1) - 1) }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" 
-                                                            style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                    <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                                    <input type="hidden" name="action" value="decrease">
+                                                    <button type="submit" class="btn btn-sm" 
+                                                            style="width:32px; height:32px; padding:0; border-radius:6px; border:1px solid #E9E6E2; background:#ffffff; display:flex; align-items:center; justify-content:center;"
                                                             {{ ($item['quantity'] ?? 1) <= 1 ? 'disabled' : '' }}>
-                                                        <i class="bi bi-dash"></i>
-                                                    </form>
+                                                        <i class="bi bi-dash" style="color:#6b6b6b;"></i>
+                                                    </button>
+                                                </form>
 
-                                                <span class="fw-bold" style="min-width:30px; text-align:center;">{{ $item['quantity'] ?? 1 }}</span>
+                                                <span class="fw-bold" style="min-width:32px; text-align:center; font-size:1rem;">{{ $item['quantity'] ?? 1 }}</span>
 
                                                 <form method="POST" action="{{ route('waiter.cart.update') }}" class="d-inline">
                                                     @csrf
-                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                    <input type="hidden" name="quantity" value="{{ ($item['quantity'] ?? 1) + 1 }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" 
-                                                            style="width:30px; height:30px; padding:0; border-radius:6px;">
-                                                        <i class="bi bi-plus"></i>
-                                                    </form>
+                                                    <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                                    <input type="hidden" name="action" value="increase">
+                                                    <button type="submit" class="btn btn-sm" 
+                                                            style="width:32px; height:32px; padding:0; border-radius:6px; border:1px solid #E9E6E2; background:#ffffff; display:flex; align-items:center; justify-content:center;">
+                                                        <i class="bi bi-plus" style="color:#6b6b6b;"></i>
+                                                    </button>
+                                                </form>
                                             </div>
 
                                             {{-- Delete Button --}}
                                             <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
                                                 @csrf
-                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                        style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                <input type="hidden" name="product_id" value="{{ $item['id'] }}">
+                                                <button type="submit" class="btn btn-sm" 
+                                                        style="width:32px; height:32px; padding:0; border-radius:6px; border:1px solid #dc3545; background:#ffffff; display:flex; align-items:center; justify-content:center;"
                                                         onclick="return confirm('Remove this item from cart?')">
-                                                    <i class="bi bi-trash"></i>
+                                                    <i class="bi bi-trash" style="color:#dc3545;"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -251,47 +264,51 @@
                                 @endforeach
                             </div>
 
-                            <div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top">
-                                <div class="fw-bold">Total</div>
-                                <div class="fw-bold" style="color:#A4823B; font-size:1.15rem;">
-                                    Rp {{ number_format($cartTotal, 0, ',', '.') }}
+                            {{-- Total Section --}}
+                            <div class="p-3 mb-3" style="background:#F5F0E5; border-radius:8px;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="fw-bold" style="font-size:1.1rem; color:#4b3028;">Total</div>
+                                    <div class="fw-bold" style="color:#A4823B; font-size:1.3rem;">
+                                        Rp {{ number_format($cartTotal, 0, ',', '.') }}
+                                    </div>
                                 </div>
                             </div>
                         @endif
 
-                        {{-- Action Buttons with proper conditions --}}
+                        {{-- Action Buttons --}}
                         <div class="d-grid gap-2">
                             @if(!empty($cart))
-                                {{-- Checkout Button (hanya tampil jika ada items di cart) --}}
+                                {{-- Checkout Button --}}
                                 <form method="POST" action="{{ route('waiter.cart.checkout') }}">
                                     @csrf
-                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center"
-                                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:10px;font-weight:700;"
+                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2"
+                                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:12px;font-weight:700; font-size:1rem;"
                                             onclick="return confirm('Create order from cart and send to kitchen?')">
-                                        <i class="bi bi-bag-check me-2"></i>
+                                        <i class="bi bi-bag-check-fill"></i>
                                         Checkout
                                     </button>
                                 </form>
 
-                                {{-- Clear Cart Button (hanya tampil jika ada items) --}}
+                                {{-- Clear Cart Button --}}
                                 <form method="POST" action="{{ route('waiter.cart.clear') }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-secondary w-100" 
-                                            style="border-radius:8px;padding:8px;"
+                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2" 
+                                            style="background:#ffffff; color:#6b6b6b; border:1px solid #E9E6E2; border-radius:8px; padding:10px; font-weight:600;"
                                             onclick="return confirm('Clear all items from cart? Table will remain selected.')">
-                                        <i class="bi bi-trash3 me-1"></i> Clear Cart
+                                        <i class="bi bi-trash3"></i>
+                                        Clear Cart
                                     </button>
                                 </form>
                             @endif
 
-                            {{-- Cancel Order Button (selalu tampil jika ada table selected) --}}
+                            {{-- Cancel Order Button --}}
                             @if($selectedTable)
                                 <form method="POST" action="{{ route('waiter.tables.cancel') }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-danger w-100" 
-                                            style="border-radius:8px;padding:10px;font-weight:600;"
+                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2" 
+                                            style="background:#ffffff; color:#dc3545; border:1px solid #dc3545; border-radius:8px; padding:10px; font-weight:600;"
                                             onclick="return confirm('{{ !empty($cart) ? 'Cancel order and return to table selection? Cart will be cleared and table will be released.' : 'Cancel order and return to table selection? Table will be released.' }}')">
-                                        <i class="bi bi-x-circle me-2"></i> 
+                                        <i class="bi bi-x-circle"></i>
                                         Cancel Order
                                     </button>
                                 </form>

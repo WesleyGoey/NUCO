@@ -13,14 +13,11 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    /**
-     * Display list of orders, optional filter by status tab.
-     */
     public function index(Request $request): View
     {
         $user = $request->user();
 
-        // Default filter per role:
+        // Default filter per role
         $defaultFilter = 'all';
         
         if ($user && method_exists($user, 'isOwner') && $user->isOwner()) {
@@ -53,16 +50,13 @@ class OrderController extends Controller
             WHEN status = 'ready' THEN 3
             WHEN status = 'sent' THEN 4
             WHEN status = 'completed' THEN 5
-            ELSE 6 END";
+            ELSE 6
+        END";
 
         if ($filter === 'all') {
-            $orders = $query->orderBy('id', 'asc')->paginate(20)->withQueryString();
+            $orders = $query->orderByRaw($statusOrderSql)->orderBy('id', 'asc')->paginate(20)->withQueryString();
         } else {
-            $orders = $query
-                ->orderByRaw($statusOrderSql)
-                ->orderBy('id', 'asc')
-                ->paginate(20)
-                ->withQueryString();
+            $orders = $query->orderBy('id', 'asc')->paginate(20)->withQueryString();
         }
 
         return view('orders', compact('orders', 'counts', 'filter'));
@@ -70,48 +64,26 @@ class OrderController extends Controller
 
     public function markProcessing(Order $order): RedirectResponse
     {
-        // Only allow moving from 'pending' -> 'processing'
         if ($order->status !== 'pending') {
-            return back()->with('error', "Order #{$order->id} cannot be processed from status '{$order->status}'.");
+            return back()->with('error', 'Only pending orders can be processed.');
         }
 
         DB::transaction(function () use ($order) {
-            // 1. Update order status
             $order->update(['status' => 'processing']);
 
-            // 2. Load order products with ingredients
-            $order->load('products.ingredients');
-
-            // 3. Get authenticated user (Chef yang memproses)
-            $user = Auth::user();
-            $userId = $user ? $user->id : null;
-
-            // 4. Reduce ingredient stock for each product in the order
+            // ✅ Deduct ingredient stock when order starts processing
             foreach ($order->products as $product) {
-                $quantityOrdered = $product->pivot->quantity;
+                $quantity = $product->pivot->quantity;
 
                 foreach ($product->ingredients as $ingredient) {
-                    $amountNeeded = $ingredient->pivot->amount_needed * $quantityOrdered;
-
-                    // Check if stock is sufficient
-                    if ($ingredient->current_stock < $amountNeeded) {
-                        // ✅ Log warning
-                        Log::warning("Insufficient stock for ingredient", [
-                            'ingredient_id' => $ingredient->id,
-                            'ingredient_name' => $ingredient->name,
-                            'needed' => $amountNeeded,
-                            'available' => $ingredient->current_stock,
-                            'order_id' => $order->id,
-                        ]);
-                    }
-
-                    // Reduce stock
+                    $amountNeeded = $ingredient->pivot->amount_needed * $quantity;
+                    
                     $ingredient->decrement('current_stock', $amountNeeded);
 
                     // Log inventory change
                     InventoryLog::create([
                         'ingredient_id' => $ingredient->id,
-                        'user_id' => $userId, // ✅ Gunakan $userId yang sudah di-check
+                        'user_id' => Auth::id(),
                         'change_amount' => -$amountNeeded,
                         'type' => 'consumption',
                     ]);
@@ -120,61 +92,54 @@ class OrderController extends Controller
         });
 
         return redirect()->route('orders', ['status' => 'processing'])
-            ->with('success', "Order #{$order->id} moved to processing. Ingredient stock updated.");
+            ->with('success', "Order #{$order->id} is now being processed!");
     }
 
-    /**
-     * Mark order -> ready (chef action "Ready")
-     */
     public function markReady(Order $order): RedirectResponse
     {
         if ($order->status === 'processing') {
             $order->update(['status' => 'ready']);
-            return redirect()->route('orders', ['status' => 'ready'])->with('success', "Order #{$order->id} marked ready.");
+            return redirect()->route('orders', ['status' => 'ready'])
+                ->with('success', "Order #{$order->id} is now ready!");
         }
 
-        return back()->with('error', "Order #{$order->id} cannot be marked ready from status '{$order->status}'.");
+        return back()->with('error', 'Order must be in processing status.');
     }
 
-    /**
-     * Mark order -> sent (existing)
-     */
     public function markSent(Order $order): RedirectResponse
     {
         if ($order->status === 'ready') {
             $order->update(['status' => 'sent']);
+            return redirect()->route('orders', ['status' => 'sent'])
+                ->with('success', "Order #{$order->id} has been sent!");
         }
 
-        return redirect()->route('orders', ['status' => 'sent'])->with('success', 'Order marked sent.');
+        return back()->with('error', 'Order must be in ready status.');
     }
 
-    /**
-     * Mark order -> completed (existing)
-     */
     public function markCompleted(Order $order): RedirectResponse
     {
-        if (in_array($order->status, ['sent','processing','pending'])) {
+        if ($order->status === 'sent') {
             $order->update(['status' => 'completed']);
+            return redirect()->route('orders', ['status' => 'completed'])
+                ->with('success', "Order #{$order->id} is completed!");
         }
 
-        return redirect()->route('orders', ['status' => 'completed'])->with('success', 'Order marked completed.');
+        return back()->with('error', 'Order must be in sent status.');
     }
 
-    /**
-     * Show single order (existing)
-     */
     public function show(Order $order): View
     {
-        $order->load(['user','table','products']);
+        $order->load(['user', 'table', 'products', 'discount', 'payment']);
         return view('orders.show', compact('order'));
     }
 
     public function pay(Order $order): RedirectResponse
     {
-        if ($order->status !== 'completed') {
-            $order->update(['status' => 'completed']);
+        if ($order->payment()->exists()) {
+            return back()->with('error', 'Order already paid!');
         }
 
-        return redirect()->route('orders')->with('success', 'Order marked as paid.');
+        return redirect()->route('cashier.checkout')->with('info', 'Please process payment for Order #' . $order->id);
     }
 }

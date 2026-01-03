@@ -27,24 +27,24 @@ Route::get('/products/{product}', [MenuController::class, 'show'])->name('menu.s
 Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts');
 
 Route::get('/orders', [OrderController::class, 'index'])
-    ->middleware(['auth','verified'])
+    ->middleware(['auth', 'verified'])
     ->name('orders');
 
 Route::get('/orders/{order}', [OrderController::class, 'show'])
-    ->middleware(['auth','verified'])
+    ->middleware(['auth', 'verified'])
     ->name('orders.show');
 
 Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
-    ->middleware(['auth','verified'])
-    ->name('orders.sent');
+    ->middleware(['auth', 'verified'])
+    ->name('orders.markSent');
 
 Route::post('/orders/{order}/processing', [OrderController::class, 'markProcessing'])
-    ->middleware(['auth','verified'])
-    ->name('orders.processing');
+    ->middleware(['auth', 'verified'])
+    ->name('orders.markProcessing');
 
 Route::post('/orders/{order}/ready', [OrderController::class, 'markReady'])
-    ->middleware(['auth','verified'])
-    ->name('orders.ready');
+    ->middleware(['auth', 'verified'])
+    ->name('orders.markReady');
 
 Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group(function () {
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
@@ -53,10 +53,10 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
 
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
-    Route::post('/cart/update-note', [CartController::class, 'updateNote'])->name('cart.update-note');
+    Route::post('/cart/update', [CartController::class, 'updateQuantity'])->name('cart.update');
+    Route::post('/cart/update-note', [CartController::class, 'updateNotes'])->name('cart.update-note');
     Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
-    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear'); // ✅ ADDED
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
@@ -91,19 +91,17 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::patch('/products/{product}', [OwnerProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [OwnerProductController::class, 'destroy'])->name('products.destroy');
     
-    // Product Recipe Management (Owner kelola recipe per product)
+    // Product Recipe Management
     Route::get('/products/{product}/recipe', [OwnerProductController::class, 'showRecipe'])->name('products.recipe');
     Route::post('/products/{product}/recipe', [OwnerProductController::class, 'updateRecipe'])->name('products.recipe.update');
 
-    // Inventory (Full CRUD untuk owner, kelola stok bahan baku)
+    // Inventory
     Route::get('/inventory', [OwnerInventoryController::class, 'index'])->name('inventory.index');
     Route::get('/inventory/create', [OwnerInventoryController::class, 'create'])->name('inventory.create');
     Route::post('/inventory', [OwnerInventoryController::class, 'store'])->name('inventory.store');
     Route::get('/inventory/{ingredient}/edit', [OwnerInventoryController::class, 'edit'])->name('inventory.edit');
     Route::patch('/inventory/{ingredient}', [OwnerInventoryController::class, 'update'])->name('inventory.update');
     Route::delete('/inventory/{ingredient}', [OwnerInventoryController::class, 'destroy'])->name('inventory.destroy');
-    
-    // Stock Update (Manual stock adjustment)
     Route::get('/inventory/{ingredient}/stock', [OwnerInventoryController::class, 'showStockForm'])->name('inventory.stock');
     Route::post('/inventory/{ingredient}/stock', [OwnerInventoryController::class, 'updateStock'])->name('inventory.stock.update');
 
@@ -127,7 +125,7 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/toggle', [OwnerPaymentController::class, 'toggleMethod'])->name('payments.toggle');
 
-    // Reviews (read-only)
+    // Reviews
     Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');
 });
 

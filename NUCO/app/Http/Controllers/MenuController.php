@@ -14,7 +14,6 @@ class MenuController extends Controller
         $search = $request->query('search', '');
         $selectedCategory = $request->query('category', null);
 
-        // Check if Category model exists
         if (class_exists(Category::class)) {
             $categories = Category::with(['products' => function ($query) use ($search) {
                 $query->where('is_available', 1)->orderBy('id', 'asc');
@@ -25,17 +24,15 @@ class MenuController extends Controller
             ->orderBy('id')
             ->get();
 
-            // Count products in each category
             foreach ($categories as $cat) {
                 $query = $cat->products()->where('is_available', 1)->orderBy('id', 'asc');
                 if (!empty($search)) {
                     $query->where('name', 'like', "%{$search}%");
                 }
 
-                // Ambil produk
                 $cat->products = $query->get();
 
-                // ✅ NEW: Check ingredient stocks and set in_stock on each product
+                // ✅ Check ingredient stocks
                 $cat->products->load('ingredients');
                 foreach ($cat->products as $p) {
                     if ($p->ingredients->isEmpty()) {
@@ -52,9 +49,7 @@ class MenuController extends Controller
                     }
                     $p->in_stock = $ok;
                 }
-                // ✅ END NEW
 
-                // Tandai kategori aktif
                 $cat->count = $cat->products->count();
             }
 
@@ -64,7 +59,6 @@ class MenuController extends Controller
                 });
             }
         } else {
-            // Fallback untuk skema lama
             $cats = Product::selectRaw('category, min(id) as first_id')
                 ->groupBy('category')
                 ->orderBy('first_id')
@@ -91,6 +85,7 @@ class MenuController extends Controller
             }
         }
 
+        // ✅ FIX: Variable untuk filter buttons
         $allCategoriesForButtons = Category::orderBy('id')->get();
 
         return view('menu', compact('categories', 'search', 'selectedCategory', 'allCategoriesForButtons'));
