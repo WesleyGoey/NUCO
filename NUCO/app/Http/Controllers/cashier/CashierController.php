@@ -28,9 +28,9 @@ class CashierController extends Controller
      */
     public function checkout(Request $request): View
     {
-        // Get orders that don't have payments (unpaid)
+        // ✅ FIXED: Get orders that don't have ANY payment (pending, success, failed)
         $orders = Order::with(['user', 'table', 'products', 'discount'])
-            ->whereDoesntHave('payment')
+            ->whereDoesntHave('payment') // ✅ ADDED: Filter out orders with payment
             ->whereIn('status', ['ready', 'completed'])
             ->orderBy('id', 'asc')
             ->get();
@@ -72,7 +72,7 @@ class CashierController extends Controller
     }
 
     /**
-     * ✅ Generate Midtrans Snap Token with Discount Applied
+     * ✅ Generate Midtrans Snap Token TANPA create payment record
      */
     public function processPayment(Request $request)
     {
@@ -84,11 +84,16 @@ class CashierController extends Controller
         $cashierId = $request->user()->id;
         $order = Order::findOrFail($request->order_id);
 
+        // ✅ Check if payment already exists (success/failed)
         if ($order->payment()->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment already processed for this order!'
-            ], 400);
+            $existingPayment = $order->payment;
+            
+            if ($existingPayment->status === 'success') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment already completed for this order!'
+                ], 400);
+            }
         }
 
         $originalAmount = $order->total_price;
@@ -96,11 +101,10 @@ class CashierController extends Controller
         $discountAmount = 0;
         $appliedDiscount = null;
 
-        // ✅ Apply discount if selected
+        // Apply discount if selected
         if ($request->discount_id) {
             $discount = Discount::find($request->discount_id);
             if ($discount) {
-                // Check minimum order amount
                 if ($discount->min_order_amount && $originalAmount < $discount->min_order_amount) {
                     return response()->json([
                         'success' => false,
@@ -108,7 +112,6 @@ class CashierController extends Controller
                     ], 400);
                 }
 
-                // Calculate discount
                 if ($discount->type === 'percent') {
                     $discountAmount = ($originalAmount * $discount->value) / 100;
                 } else {
@@ -118,7 +121,6 @@ class CashierController extends Controller
                 $finalAmount = $originalAmount - $discountAmount;
                 $appliedDiscount = $discount;
                 
-                // ✅ IMPORTANT: Update order dengan discount_id
                 $order->update(['discount_id' => $discount->id]);
             }
         }
@@ -126,11 +128,11 @@ class CashierController extends Controller
         // Generate unique transaction ID
         $transactionId = 'ORDER-' . $order->id . '-' . time();
 
-        // ✅ Create Midtrans transaction parameters dengan FINAL AMOUNT (after discount)
+        // Midtrans params
         $params = [
             'transaction_details' => [
                 'order_id' => $transactionId,
-                'gross_amount' => (int) $finalAmount, // ✅ AMOUNT AFTER DISCOUNT
+                'gross_amount' => (int) $finalAmount,
             ],
             'customer_details' => [
                 'first_name' => $order->order_name ?? 'Guest',
@@ -147,36 +149,27 @@ class CashierController extends Controller
             ],
         ];
 
-        // ✅ Add discount as separate line item (for transparency in Midtrans dashboard)
         if ($appliedDiscount && $discountAmount > 0) {
             $params['item_details'][] = [
                 'id' => 'DISCOUNT-' . $appliedDiscount->id,
-                'price' => -1 * (int) $discountAmount, // ✅ NEGATIVE AMOUNT
+                'price' => -1 * (int) $discountAmount,
                 'quantity' => 1,
                 'name' => 'Discount: ' . $appliedDiscount->name,
             ];
         }
 
         try {
-            // ✅ Get Snap token from Midtrans
             $snapToken = Snap::getSnapToken($params);
 
-            // ✅ Create payment record with FINAL AMOUNT (after discount)
-            $payment = Payment::create([
-                'order_id' => $order->id,
-                'user_id' => $cashierId,
-                'amount' => $finalAmount, // ✅ FINAL AMOUNT
-                'transaction_id' => $transactionId,
-                'snap_token' => $snapToken,
-                'status' => 'pending',
-                'payment_time' => now(),
-            ]);
+            // ✅ JANGAN CREATE PAYMENT DI SINI!
+            // Payment akan dibuat setelah user bayar sukses (di frontend atau callback)
 
             return response()->json([
                 'success' => true,
                 'snap_token' => $snapToken,
                 'transaction_id' => $transactionId,
-                'payment_id' => $payment->id, // ✅ ADDED: Return payment ID untuk cancel
+                'order_id' => $order->id, // ✅ Return order_id untuk create payment nanti
+                'cashier_id' => $cashierId, // ✅ Return cashier_id
                 'original_amount' => $originalAmount,
                 'discount_amount' => $discountAmount,
                 'final_amount' => $finalAmount,
@@ -192,37 +185,52 @@ class CashierController extends Controller
     }
 
     /**
-     * ✅ NEW: Cancel pending payment (when user closes popup)
+     * ✅ NEW: Store payment record setelah user bayar sukses
      */
-    public function cancelPayment(Request $request)
+    public function storePayment(Request $request)
     {
         $request->validate([
-            'payment_id' => 'required|exists:payments,id',
+            'order_id' => 'required|exists:orders,id',
+            'transaction_id' => 'required|string',
+            'amount' => 'required|numeric',
+            'cashier_id' => 'required|exists:users,id',
+            'snap_token' => 'nullable|string',
         ]);
 
-        $payment = Payment::find($request->payment_id);
+        $order = Order::find($request->order_id);
 
-        if (!$payment) {
+        // Check if payment already exists
+        if ($order->payment()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Payment not found'
-            ], 404);
+                'message' => 'Payment already recorded'
+            ], 400);
         }
 
-        // Only delete if still pending
-        if ($payment->status === 'pending') {
-            $payment->delete();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment cancelled'
-            ]);
+        // Create payment record
+        $payment = Payment::create([
+            'order_id' => $request->order_id,
+            'user_id' => $request->cashier_id,
+            'amount' => $request->amount,
+            'transaction_id' => $request->transaction_id,
+            'snap_token' => $request->snap_token,
+            'status' => 'success', // ✅ Payment sukses
+            'payment_time' => now(),
+        ]);
+
+        // Update order status
+        $order->update(['status' => 'completed']);
+
+        // Release table
+        if ($order->table) {
+            $order->table->update(['status' => 'available']);
         }
 
         return response()->json([
-            'success' => false,
-            'message' => 'Payment cannot be cancelled'
-        ], 400);
+            'success' => true,
+            'message' => 'Payment recorded successfully',
+            'payment' => $payment,
+        ]);
     }
 
     /**
@@ -240,31 +248,39 @@ class CashierController extends Controller
         $transactionStatus = $request->transaction_status;
         $orderId = $request->order_id;
 
-        $payment = Payment::where('transaction_id', $orderId)->first();
+        // Extract order ID from transaction_id (ORDER-123-1234567890)
+        preg_match('/ORDER-(\d+)-/', $orderId, $matches);
+        $extractedOrderId = $matches[1] ?? null;
 
-        if (!$payment) {
-            return response()->json(['message' => 'Payment not found'], 404);
+        if (!$extractedOrderId) {
+            return response()->json(['message' => 'Invalid transaction ID format'], 400);
         }
 
-        DB::transaction(function() use ($payment, $transactionStatus) {
-            if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
-                // ✅ Payment success
-                $payment->update([
-                    'status' => 'success',
-                    'payment_time' => now(),
-                ]);
+        $order = Order::find($extractedOrderId);
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
 
-                $order = $payment->order;
+        DB::transaction(function() use ($order, $transactionStatus, $orderId, $request) {
+            if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
+                // ✅ Payment success - create payment record if not exists
+                if (!$order->payment()->exists()) {
+                    Payment::create([
+                        'order_id' => $order->id,
+                        'user_id' => $order->user_id, // atau cashier_id dari session
+                        'amount' => $request->gross_amount,
+                        'transaction_id' => $orderId,
+                        'snap_token' => null,
+                        'status' => 'success',
+                        'payment_time' => now(),
+                    ]);
+                }
+
                 $order->update(['status' => 'completed']);
 
-                // Release table
                 if ($order->table) {
                     $order->table->update(['status' => 'available']);
                 }
-            } elseif ($transactionStatus == 'pending') {
-                $payment->update(['status' => 'pending']);
-            } elseif (in_array($transactionStatus, ['deny', 'expire', 'cancel'])) {
-                $payment->update(['status' => 'failed']);
             }
         });
 

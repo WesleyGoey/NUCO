@@ -191,9 +191,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ Store current payment ID for cancellation
-    let currentPaymentId = null;
-
     // Discount selection real-time calculation
     document.querySelectorAll('.discount-select').forEach(select => {
         select.addEventListener('change', function() {
@@ -210,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const discountValue = parseFloat(selectedOption.getAttribute('data-value'));
                 const minAmount = parseFloat(selectedOption.getAttribute('data-min') || 0);
                 
-                // Check minimum order amount
                 if (minAmount > 0 && orderTotal < minAmount) {
                     alert(`Minimum order amount is Rp ${minAmount.toLocaleString('id-ID')}`);
                     this.value = '';
@@ -245,11 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const discountSelect = document.querySelector(`#discount${orderId}`);
             const discountId = discountSelect ? discountSelect.value : '';
 
-            // Disable button
             this.disabled = true;
             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-            // Send request to backend
+            // ✅ Step 1: Get Snap Token dari backend
             fetch('{{ route("cashier.payment.process") }}', {
                 method: 'POST',
                 headers: {
@@ -264,63 +259,60 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // ✅ Store payment ID
-                    currentPaymentId = data.payment_id;
-
-                    // Open Midtrans Snap popup
+                    // ✅ Step 2: Open Midtrans Snap popup
                     snap.pay(data.snap_token, {
                         onSuccess: function(result) {
-                            currentPaymentId = null; // ✅ Clear payment ID
-                            alert('Payment success!');
-                            window.location.reload();
+                            console.log('Payment success:', result);
+
+                            // ✅ Step 3: Store payment record ke database
+                            fetch('{{ route("cashier.payment.store") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    order_id: data.order_id,
+                                    transaction_id: data.transaction_id,
+                                    amount: data.final_amount,
+                                    cashier_id: data.cashier_id,
+                                    snap_token: data.snap_token
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(paymentData => {
+                                if (paymentData.success) {
+                                    alert('Payment success!');
+                                    window.location.reload();
+                                } else {
+                                    alert('Payment recorded but failed to save: ' + paymentData.message);
+                                    window.location.reload();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Store payment error:', error);
+                                alert('Payment success but failed to record!');
+                                window.location.reload();
+                            });
                         },
                         onPending: function(result) {
-                            currentPaymentId = null; // ✅ Clear payment ID
+                            console.log('Payment pending:', result);
+                            // ✅ JANGAN STORE PAYMENT, hanya log
                             alert('Payment pending. Please complete payment.');
-                            window.location.reload();
                         },
                         onError: function(result) {
-                            currentPaymentId = null; // ✅ Clear payment ID
+                            console.log('Payment error:', result);
                             alert('Payment failed!');
                             window.location.reload();
                         },
-                        // ✅ FIXED: Cancel payment when closing popup
                         onClose: function() {
-                            if (currentPaymentId) {
-                                // Delete pending payment
-                                fetch('{{ route("cashier.payment.cancel") }}', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                    },
-                                    body: JSON.stringify({
-                                        payment_id: currentPaymentId
-                                    })
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log('Payment cancelled:', data);
-                                    currentPaymentId = null;
-                                    
-                                    // Re-enable button
-                                    const btn = document.querySelector(`[data-order-id="${orderId}"]`);
-                                    if (btn) {
-                                        btn.disabled = false;
-                                        btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Cancel error:', error);
-                                    window.location.reload();
-                                });
-                            } else {
-                                // Re-enable button if no payment was created
-                                const btn = document.querySelector(`[data-order-id="${orderId}"]`);
-                                if (btn) {
-                                    btn.disabled = false;
-                                    btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
-                                }
+                            console.log('Popup closed without payment');
+                            // ✅ JANGAN STORE PAYMENT, user cancel
+                            // Re-enable button
+                            const btn = document.querySelector(`[data-order-id="${orderId}"]`);
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                             }
                         }
                     });
