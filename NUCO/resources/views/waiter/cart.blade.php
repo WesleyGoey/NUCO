@@ -138,21 +138,20 @@
                                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                                 </div>
 
-                                                <div>
-                                                    @if(!empty($product->is_available) && $product->is_available)
-                                                        <form method="POST" action="{{ route('waiter.cart.add') }}" class="d-inline">
-                                                            @csrf
-                                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                                            <input type="hidden" name="quantity" value="1">
-                                                            <button type="submit" class="btn btn-sm"
-                                                                    style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 10px;font-weight:600;">
-                                                                Add
-                                                            </button>
-                                                        </form>
-                                                    @else
-                                                        <span class="badge bg-secondary">Unavailable</span>
-                                                    @endif
-                                                </div>
+                                                {{-- ✅ UPDATED: Check both is_available and in_stock --}}
+                                                @if(!empty($product->is_available) && $product->is_available && ($product->in_stock ?? true))
+                                                    <form method="POST" action="{{ route('waiter.cart.add') }}" class="d-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                        <input type="hidden" name="quantity" value="1">
+                                                        <button type="submit" class="btn btn-sm"
+                                                                style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 10px;font-weight:600;">
+                                                            Add
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <button class="btn btn-sm btn-outline-secondary" disabled>Out of stock</button>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

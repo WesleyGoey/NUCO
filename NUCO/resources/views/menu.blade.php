@@ -4,112 +4,60 @@
 
 @section('content')
 <div class="container-xl py-4">
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <h4 class="m-0 fw-bold">Menu</h4>
-                    <div class="text-muted small">Showing results — {{ $totalProductsCount }}</div>
-                </div>
-
-                <div class="ms-3" style="min-width:220px; max-width:420px;">
-                    <form method="GET" action="{{ route('menu') }}" class="d-flex">
-                        @if(!empty($selectedCategory))
-                            <input type="hidden" name="category" value="{{ $selectedCategory }}">
-                        @endif
-                        <input name="search" value="{{ $search ?? '' }}" class="form-control form-control-sm"
-                               placeholder="Search menu..." style="border-radius:10px;border:1px solid #E9E6E2;padding:8px;" />
-                        <button type="submit" class="btn btn-sm ms-2"
-                                style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:6px 12px;font-weight:600;">
-                            Search
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            {{-- Category Filter Buttons --}}
-            <div class="overflow-auto py-2" style="white-space:nowrap; -webkit-overflow-scrolling:touch;">
-                @php $allActive = empty($selectedCategory); @endphp
-                <a href="{{ route('menu', ['search' => $search ?? '']) }}"
-                   class="btn btn-sm me-2 mb-2"
-                   style="{{ $allActive ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
-                    All
-                    <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">{{ $totalProductsCount }}</span>
-                </a>
-
-                {{-- ✅ FIXED: Gunakan variable dari controller, bukan query di view --}}
-                @foreach($allCategories as $cat)
-                    @php
-                        $catId = (string) $cat->id;
-                        $active = !empty($selectedCategory) && (string)$selectedCategory === $catId;
-                        // Hitung produk untuk kategori ini
-                        $productCount = $cat->products()->count();
-                    @endphp
-                    <a href="{{ route('menu', ['category' => $catId, 'search' => $search ?? '']) }}"
-                       class="btn btn-sm me-2 mb-2"
-                       style="{{ $active ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
-                        {{ $cat->name }}
-                        <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
-                            {{ $productCount }}
-                        </span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold">Menu</h1>
+        <small class="text-muted">Browse our dishes</small>
     </div>
 
-   {{-- Products grouped by category --}}
-   <div class="row g-3">
-        <section class="col-12">
-            @php
-                // total products that will be rendered (sum of product counts per category)
-                $totalDisplayed = $categories->sum(function($c) {
-                    return isset($c->products) ? $c->products->count() : 0;
-                });
-            @endphp
+    <form method="GET" action="{{ route('menu') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search" value="{{ $search }}" class="form-control"
+                   placeholder="Search products..." style="border-radius:10px 0 0 10px;">
+            <button type="submit" class="btn" style="background:#A4823B;color:#F5F0E5;border-radius:0 10px 10px 0;">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+    </form>
 
-            @if ($totalDisplayed === 0)
-                <div class="text-center text-muted py-5">
-                    <i class="bi bi-inbox" style="font-size:3rem;"></i>
-                    <p class="mt-2">
-                        @if(!empty($search))
-                            No results found for "{{ e($search) }}"
-                        @else
-                            No products available
-                        @endif
-                    </p>
-                </div>
-            @else
-                @foreach($categories as $category)
-                    @if(empty($category->products) || $category->products->isEmpty())
-                        @continue
-                    @endif
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a href="{{ route('menu') }}" class="btn {{ empty($selectedCategory) ? 'btn-primary' : 'btn-outline-secondary' }}" 
+           style="border-radius:8px;padding:8px 16px;font-weight:600;">All</a>
+        @foreach($allCategoriesForButtons as $cat)
+            <a href="{{ route('menu', ['category' => $cat->id]) }}" 
+               class="btn {{ $selectedCategory == $cat->id ? 'btn-primary' : 'btn-outline-secondary' }}" 
+               style="border-radius:8px;padding:8px 16px;font-weight:600;">
+                {{ $cat->name }}
+            </a>
+        @endforeach
+    </div>
 
-                    <div class="mb-4">
-                        <h5 class="fw-bold mb-3" style="color:#4b3028;">{{ $category->name }}</h5>
+    <div class="row g-3">
+        @if($categories->isEmpty())
+            <div class="col-12">
+                <div class="alert alert-info">No categories found.</div>
+            </div>
+        @else
+            @foreach($categories as $category)
+                @if($category->products->isNotEmpty())
+                    <div class="col-12">
+                        <h4 class="mb-3 fw-bold" style="color:#4b3028;">{{ $category->name }}</h4>
                         <div class="row g-3">
                             @foreach($category->products as $product)
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    {{-- Product Card --}}
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                                     <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
-                                        <div style="border-radius:12px 12px 0 0; overflow:hidden;">
-                                            <div class="ratio ratio-4x3">
-                                                @if(!empty($product->image_path))
-                                                    <img src="{{ asset('storage/' . $product->image_path) }}" 
-                                                         alt="{{ $product->name }}" 
-                                                         style="width:100%; height:100%; object-fit:cover; display:block;">
-                                                @else
-                                                    <div class="d-flex align-items-center justify-content-center w-100 h-100"
-                                                         style="background:#FFFFFF; border:1px dashed rgba(0,0,0,0.06);"></div>
-                                                @endif
+                                        @if($product->image_path)
+                                            <img src="{{ asset('storage/' . $product->image_path) }}" 
+                                                 class="card-img-top" alt="{{ $product->name }}"
+                                                 style="height:180px; object-fit:cover;">
+                                        @else
+                                            <div style="height:180px; background:#F5F0E5; display:flex; align-items:center; justify-content:center;">
+                                                <i class="bi bi-image" style="font-size:3rem; color:#A4823B; opacity:0.3;"></i>
                                             </div>
-                                        </div>
+                                        @endif
 
                                         <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title fw-bold mb-1 text-truncate">{{ $product->name }}</h5>
-                                            @if(!empty($product->description))
-                                                <p class="card-text text-muted small mb-2" style="line-height:1.3;">{{ $product->description }}</p>
-                                            @endif
+                                            <h5 class="card-title fw-bold mb-2" style="color:#4b3028;">{{ $product->name }}</h5>
+                                            <p class="card-text small text-muted mb-3">{{ Str::limit($product->description ?? '-', 80) }}</p>
 
                                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                                 <div class="fw-bold" style="color:#A4823B;">
@@ -117,10 +65,11 @@
                                                 </div>
 
                                                 <div>
-                                                    @if(!empty($product->is_available) && $product->is_available)
+                                                    {{-- ✅ UPDATED: Check both is_available and in_stock --}}
+                                                    @if(!empty($product->is_available) && $product->is_available && ($product->in_stock ?? true))
                                                         <span class="badge" style="background:#E6F9EE;color:#2D7A3B;border-radius:6px;padding:6px 10px;">Available</span>
                                                     @else
-                                                        <span class="badge bg-secondary">Unavailable</span>
+                                                        <span class="badge bg-secondary">Out of stock</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -130,9 +79,9 @@
                             @endforeach
                         </div>
                     </div>
-                @endforeach
-            @endif
-        </section>
+                @endif
+            @endforeach
+        @endif
     </div>
 </div>
 @endsection
