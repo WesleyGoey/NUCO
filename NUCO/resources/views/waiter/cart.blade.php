@@ -223,8 +223,7 @@
                                                             style="width:30px; height:30px; padding:0; border-radius:6px;"
                                                             {{ ($item['quantity'] ?? 1) <= 1 ? 'disabled' : '' }}>
                                                         <i class="bi bi-dash"></i>
-                                                    </button>
-                                                </form>
+                                                    </form>
 
                                                 <span class="fw-bold" style="min-width:30px; text-align:center;">{{ $item['quantity'] ?? 1 }}</span>
 
@@ -235,8 +234,7 @@
                                                     <button type="submit" class="btn btn-sm btn-outline-secondary" 
                                                             style="width:30px; height:30px; padding:0; border-radius:6px;">
                                                         <i class="bi bi-plus"></i>
-                                                    </button>
-                                                </form>
+                                                    </form>
                                             </div>
 
                                             {{-- Delete Button --}}
@@ -293,9 +291,9 @@
                                     @csrf
                                     <button type="submit" class="btn btn-outline-danger w-100" 
                                             style="border-radius:8px;padding:10px;font-weight:600;"
-                                            onclick="return confirm('{{ !empty($cart) ? 'Cancel order and return to table selection? Cart will be cleared and table will be released.' : 'Release table and return to table selection?' }}')">
+                                            onclick="return confirm('{{ !empty($cart) ? 'Cancel order and return to table selection? Cart will be cleared and table will be released.' : 'Cancel order and return to table selection? Table will be released.' }}')">
                                         <i class="bi bi-x-circle me-2"></i> 
-                                        {{ !empty($cart) ? 'Cancel Order' : 'Release Table' }}
+                                        Cancel Order
                                     </button>
                                 </form>
                             @endif
