@@ -10,6 +10,8 @@ use App\Models\RestaurantTable;
 use App\Models\Payment;
 use App\Models\InventoryLog;
 use App\Models\Discount;
+use App\Models\Review;
+use App\Models\Ingredient;
 use Illuminate\Support\Arr;
 use Carbon\Carbon;
 
@@ -28,7 +30,6 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        // create 20 orders
         for ($i = 0; $i < 20; $i++) {
             $user = $users->isNotEmpty() ? $users->random() : null;
             $table = $tables->isNotEmpty() ? $tables->random() : null;
@@ -55,7 +56,6 @@ class OrderSeeder extends Seeder
                 $total += $subtotal;
             }
 
-            // apply discount if present
             if ($order->discount_id) {
                 $d = $discounts->first(fn($x) => $x->id === $order->discount_id);
                 if ($d) {
@@ -69,9 +69,7 @@ class OrderSeeder extends Seeder
 
             $order->update(['total_price' => $total]);
 
-            // create payment for completed orders
             if ($order->status === 'completed') {
-                // ✅ Generate unique transaction ID
                 $transactionId = 'ORDER-' . $order->id . '-' . $faker->unique()->numerify('######');
                 
                 Payment::create([
@@ -79,17 +77,15 @@ class OrderSeeder extends Seeder
                     'user_id' => $user?->id,
                     'amount' => $total,
                     'transaction_id' => $transactionId,
-                    'snap_token' => null, // ✅ Seeding: no snap token
-                    'status' => 'success', // ✅ Assume success
+                    'snap_token' => null,
+                    'status' => 'success',
                     'payment_time' => Carbon::now()->subMinutes(rand(0, 720)),
                 ]);
             }
 
-            // create random inventory logs (consumption)
             foreach ($order->products as $piv) {
-                // pick random ingredient consumption log (dummy)
                 InventoryLog::create([
-                    'ingredient_id' => \App\Models\Ingredient::inRandomOrder()->first()->id ?? null,
+                    'ingredient_id' => Ingredient::inRandomOrder()->first()->id ?? null,
                     'user_id' => $user?->id,
                     'change_amount' => -1 * rand(1,5),
                     'type' => 'consumption',
@@ -97,10 +93,9 @@ class OrderSeeder extends Seeder
             }
         }
 
-        // create some reviews
         foreach ($users as $u) {
             if (rand(0,1)) {
-                \App\Models\Review::create([
+                Review::create([
                     'user_id' => $u->id,
                     'rating' => rand(3,5),
                     'comment' => $faker->sentence(),
@@ -108,8 +103,7 @@ class OrderSeeder extends Seeder
             }
         }
 
-        // attach product_ingredients rudimentary if not exists
-        $ingredients = \App\Models\Ingredient::all();
+        $ingredients = Ingredient::all();
         foreach ($products as $prod) {
             if ($prod->ingredients()->count() === 0 && $ingredients->isNotEmpty()) {
                 $take = $ingredients->random(min(3, $ingredients->count()));

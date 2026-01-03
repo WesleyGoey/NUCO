@@ -56,14 +56,11 @@
                             @endif
                         </div>
 
-                        {{-- Customer (using order_name) --}}
                         <div class="mb-3">
                             <div class="small text-muted mb-1">Customer</div>
-                            {{-- ✅ CHANGED: Display order_name only --}}
                             <div class="fw-semibold">{{ $order->order_name ?? 'No Name' }}</div>
                         </div>
 
-                        {{-- Items --}}
                         <div class="mb-3">
                             <div class="small text-muted mb-1">Items</div>
                             <div class="d-flex flex-wrap gap-1">
@@ -73,7 +70,6 @@
                             </div>
                         </div>
 
-                        {{-- Total --}}
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted">Total</span>
                             <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
@@ -81,9 +77,7 @@
                             </span>
                         </div>
 
-                        {{-- Action Button (only Process Payment, no Cancel) --}}
                         <div class="d-grid">
-                            {{-- Payment Button --}}
                             <button type="button" class="btn w-100" 
                                     style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;"
                                     data-bs-toggle="modal" 
@@ -96,7 +90,6 @@
                 </div>
             </div>
 
-            {{-- Payment Modal --}}
             <div class="modal fade" id="paymentModal{{ $order->id }}" tabindex="-1" aria-labelledby="paymentModalLabel{{ $order->id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content" style="border-radius:14px; border:none;">
@@ -105,7 +98,6 @@
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-4">
-                            {{-- Order Summary --}}
                             <div class="mb-3">
                                 <div class="small text-muted mb-1">Order #{{ $order->id }}</div>
                                 <div class="fw-bold" style="color:#A4823B; font-size:1.5rem;">
@@ -113,7 +105,6 @@
                                 </div>
                             </div>
 
-                            {{-- Discount Selection --}}
                             <div class="mb-3">
                                 <label for="discount{{ $order->id }}" class="form-label fw-bold" style="color:#4b3028;">Apply Discount (Optional)</label>
                                 <select name="discount_id" id="discount{{ $order->id }}" class="form-select discount-select" style="border-radius:10px; padding:10px;" data-order-id="{{ $order->id }}" data-order-total="{{ $order->total_price }}">
@@ -137,7 +128,6 @@
                                 </select>
                             </div>
 
-                            {{-- Price Breakdown --}}
                             <div class="card" style="background:#F9F9F9; border:1px solid #E9E6E2; border-radius:10px;">
                                 <div class="card-body p-3">
                                     <div class="d-flex justify-content-between mb-2">
@@ -158,7 +148,6 @@
                                 </div>
                             </div>
 
-                            {{-- Submit Button --}}
                             <button type="button" class="btn w-100 mt-3 pay-btn" 
                                     data-order-id="{{ $order->id }}"
                                     style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;">
@@ -169,8 +158,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- ✅ REMOVED: Cancel Modal dihapus --}}
 
         @empty
             <div class="col-12">
@@ -185,13 +172,11 @@
     </div>
 </div>
 
-{{-- ✅ Midtrans Snap Script --}}
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Discount selection real-time calculation
     document.querySelectorAll('.discount-select').forEach(select => {
         select.addEventListener('change', function() {
             const orderId = this.getAttribute('data-order-id');
@@ -234,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ✅ Handle payment button click
     document.querySelectorAll('.pay-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const orderId = this.getAttribute('data-order-id');

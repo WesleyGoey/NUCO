@@ -132,9 +132,9 @@ class ProductController extends Controller
     public function updateRecipe(Request $request, Product $product): RedirectResponse
     {
         $validated = $request->validate([
-            'ingredients' => ['nullable', 'array'],
+            'ingredients' => ['required', 'array', 'min:1'],
             'ingredients.*.id' => ['required', 'exists:ingredients,id'],
-            'ingredients.*.amount' => ['required', 'numeric', 'min:0'],
+            'ingredients.*.amount' => ['required', 'numeric', 'min:0.01'], // ✅ FIXED: Must be > 0
         ]);
 
         // Sync ingredients with amounts

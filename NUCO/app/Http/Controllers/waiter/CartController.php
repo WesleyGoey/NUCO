@@ -11,6 +11,8 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\RestaurantTable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -186,46 +188,129 @@ class CartController extends Controller
 
     public function checkout(Request $request): RedirectResponse
     {
+        // ✅ Step 1: Log request data
+        Log::info('Checkout started', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all()
+        ]);
+
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+        ]);
+
         $cart = session('cart', []);
         $selectedTable = session('selected_table');
 
+        // ✅ Step 2: Log session data
+        Log::info('Session data', [
+            'cart' => $cart,
+            'selected_table' => $selectedTable
+        ]);
+
         if (empty($cart)) {
-            return back()->with('error', 'Cart is empty!');
+            Log::warning('Checkout failed: Empty cart');
+            return back()->with('error', 'Your cart is empty!');
         }
 
         if (!$selectedTable) {
+            Log::warning('Checkout failed: No table selected');
             return back()->with('error', 'No table selected!');
         }
 
-        $table = RestaurantTable::find($selectedTable['id']);
-        if (!$table) {
-            return back()->with('error', 'Table not found!');
-        }
+        $total = array_sum(array_map(fn($i) => (int)($i['subtotal'] ?? 0), $cart));
 
-        $totalAmount = array_sum(array_column($cart, 'subtotal'));
-
-        $user = Auth::user();
-        $userId = $user ? $user->id : null;
-
-        $order = Order::create([
-            'restaurant_table_id' => $table->id,
-            'user_id' => $userId,
-            'total_price' => $totalAmount,
-            'status' => 'pending',
+        // ✅ Step 3: Log calculated total
+        Log::info('Cart total calculated', [
+            'total' => $total,
+            'cart_items' => count($cart)
         ]);
 
-        foreach ($cart as $item) {
-            $order->products()->attach($item['id'], [
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['subtotal'],
-                'note' => $item['notes'] ?? null,
+        try {
+            $orderId = null;
+
+            // ✅ Use transaction with error handling
+            DB::transaction(function () use ($validated, $cart, $selectedTable, $total, &$orderId) {
+                // ✅ Step 4: Lock the table
+                $table = RestaurantTable::where('id', $selectedTable['id'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$table) {
+                    Log::error('Table not found', ['table_id' => $selectedTable['id']]);
+                    throw new \Exception('Table not found');
+                }
+
+                Log::info('Table locked', [
+                    'table_id' => $table->id,
+                    'table_number' => $table->table_number
+                ]);
+
+                // ✅ Step 5: Create order
+                $order = Order::create([
+                    'user_id' => Auth::id(),
+                    'restaurant_table_id' => $selectedTable['id'],
+                    'order_name' => $validated['customer_name'],
+                    'total_price' => $total,
+                    'status' => 'pending',
+                ]);
+
+                $orderId = $order->id;
+
+                Log::info('Order created', [
+                    'order_id' => $order->id,
+                    'order_name' => $order->order_name,
+                    'total_price' => $order->total_price,
+                    'status' => $order->status
+                ]);
+
+                // ✅ Step 6: Attach products to order
+                foreach ($cart as $productId => $item) {
+                    $order->products()->attach($productId, [
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $item['subtotal'],
+                        'note' => $item['note'] ?? null,
+                    ]);
+
+                    Log::info('Product attached', [
+                        'order_id' => $order->id,
+                        'product_id' => $productId,
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $item['subtotal']
+                    ]);
+                }
+
+                // ✅ Log successful transaction
+                Log::info('Order transaction completed successfully', [
+                    'order_id' => $order->id,
+                    'table_id' => $table->id,
+                    'total' => $total,
+                    'products_count' => count($cart)
+                ]);
+            });
+
+            // ✅ Step 7: Clear cart dan selected_table dari session
+            session()->forget(['cart', 'selected_table']);
+
+            Log::info('Session cleared after checkout', [
+                'order_id' => $orderId
             ]);
+
+            // ✅ Step 8: Redirect ke waiter.tables
+            return redirect()->route('waiter.tables')
+                ->with('success', 'Order placed successfully! Table remains occupied until payment.');
+
+        } catch (\Exception $e) {
+            // ✅ Log error for debugging
+            Log::error('Checkout failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'table_id' => $selectedTable['id'] ?? null,
+                'cart_items' => count($cart),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return back()->with('error', 'Failed to create order: ' . $e->getMessage());
         }
-
-        $table->update(['status' => 'occupied']);
-
-        session()->forget(['cart', 'selected_table']);
-
-        return redirect()->route('waiter.tables')->with('success', "Order #{$order->id} created successfully!");
     }
 }

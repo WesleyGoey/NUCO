@@ -12,6 +12,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Facades\Log;
 
 class CashierController extends Controller
 {
@@ -177,15 +178,23 @@ class CashierController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            // ✅ ADD: Log error for debugging
+            Log::error('Midtrans Snap Token Error', [
+                'order_id' => $order->id,
+                'amount' => $finalAmount,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate payment token: ' . $e->getMessage()
+                'message' => 'Failed to generate payment token. Please try again.'
             ], 500);
         }
     }
 
     /**
-     * ✅ NEW: Store payment record setelah user bayar sukses
+     * ✅ Store payment record setelah user bayar sukses
      */
     public function storePayment(Request $request)
     {
@@ -199,7 +208,15 @@ class CashierController extends Controller
 
         $order = Order::find($request->order_id);
 
-        // Check if payment already exists
+        // ✅ Check if payment already exists by transaction_id
+        if (Payment::where('transaction_id', $request->transaction_id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment already recorded for this transaction'
+            ], 400);
+        }
+
+        // Check if payment already exists for order
         if ($order->payment()->exists()) {
             return response()->json([
                 'success' => false,
@@ -207,29 +224,31 @@ class CashierController extends Controller
             ], 400);
         }
 
-        // Create payment record
-        $payment = Payment::create([
-            'order_id' => $request->order_id,
-            'user_id' => $request->cashier_id,
-            'amount' => $request->amount,
-            'transaction_id' => $request->transaction_id,
-            'snap_token' => $request->snap_token,
-            'status' => 'success', // ✅ Payment sukses
-            'payment_time' => now(),
-        ]);
+        // ✅ Use DB transaction untuk atomicity
+        DB::transaction(function () use ($order, $request) {
+            // Create payment record
+            Payment::create([
+                'order_id' => $request->order_id,
+                'user_id' => $request->cashier_id,
+                'amount' => $request->amount,
+                'transaction_id' => $request->transaction_id,
+                'snap_token' => $request->snap_token,
+                'status' => 'success',
+                'payment_time' => now(),
+            ]);
 
-        // Update order status
-        $order->update(['status' => 'completed']);
+            // Update order status to completed
+            $order->update(['status' => 'completed']);
 
-        // Release table
-        if ($order->table) {
-            $order->table->update(['status' => 'available']);
-        }
+            // ✅ Release table (status = 'available')
+            if ($order->table) {
+                $order->table->update(['status' => 'available']);
+            }
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Payment recorded successfully',
-            'payment' => $payment,
         ]);
     }
 
@@ -267,7 +286,7 @@ class CashierController extends Controller
                 if (!$order->payment()->exists()) {
                     Payment::create([
                         'order_id' => $order->id,
-                        'user_id' => $order->user_id, // atau cashier_id dari session
+                        'user_id' => $order->user_id,
                         'amount' => $request->gross_amount,
                         'transaction_id' => $orderId,
                         'snap_token' => null,
@@ -276,8 +295,10 @@ class CashierController extends Controller
                     ]);
                 }
 
+                // Update order status to completed
                 $order->update(['status' => 'completed']);
 
+                // ✅ Release table (status = 'available')
                 if ($order->table) {
                     $order->table->update(['status' => 'available']);
                 }

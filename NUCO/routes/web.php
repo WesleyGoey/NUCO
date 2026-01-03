@@ -34,19 +34,23 @@ Route::get('/orders/{order}', [OrderController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('orders.show');
 
-Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
-    ->middleware(['auth', 'verified'])
-    ->name('orders.markSent');
-
 Route::post('/orders/{order}/processing', [OrderController::class, 'markProcessing'])
     ->middleware(['auth', 'verified'])
-    ->name('orders.markProcessing');
+    ->name('orders.processing');
 
 Route::post('/orders/{order}/ready', [OrderController::class, 'markReady'])
     ->middleware(['auth', 'verified'])
-    ->name('orders.markReady');
+    ->name('orders.ready');
 
-Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group(function () {
+Route::post('/orders/{order}/sent', [OrderController::class, 'markSent'])
+    ->middleware(['auth', 'verified'])
+    ->name('orders.sent');
+
+Route::post('/orders/{order}/completed', [OrderController::class, 'markCompleted'])
+    ->middleware(['auth', 'verified'])
+    ->name('orders.completed');
+
+Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified', 'role:waiter'])->group(function () {
     Route::get('/tables', [TableController::class, 'index'])->name('tables');
     Route::post('/tables/select', [TableController::class, 'select'])->name('tables.select');
     Route::post('/tables/cancel', [TableController::class, 'cancel'])->name('tables.cancel');
@@ -60,13 +64,13 @@ Route::prefix('waiter')->name('waiter.')->middleware(['auth','verified'])->group
     Route::post('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
-Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified'])->group(function () {
+Route::prefix('reviewer')->name('reviewer.')->middleware(['auth','verified', 'role:reviewer'])->group(function () {
     Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::get('/thankyou', [ReviewController::class, 'thankyou'])->name('thankyou');
 });
 
-Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->group(function () {
+Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified', 'role:cashier'])->group(function () {
     Route::get('/checkout', [CashierController::class, 'checkout'])->name('checkout');
     Route::post('/payment/process', [CashierController::class, 'processPayment'])->name('payment.process');
     Route::post('/payment/store', [CashierController::class, 'storePayment'])->name('payment.store'); // ✅ ADDED
@@ -76,7 +80,7 @@ Route::prefix('cashier')->name('cashier.')->middleware(['auth','verified'])->gro
 // ✅ Midtrans callback route (no auth middleware)
 Route::post('/midtrans/callback', [CashierController::class, 'handleCallback'])->name('midtrans.callback');
 
-Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(function () {
+Route::prefix('owner')->name('owner.')->middleware(['auth','verified', 'role:owner'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -132,7 +136,7 @@ Route::prefix('owner')->name('owner.')->middleware(['auth','verified'])->group(f
     Route::get('/reviews', [OwnerReviewController::class, 'index'])->name('reviews.index');
 });
 
-Route::prefix('chef')->name('chef.')->middleware(['auth','verified'])->group(function () {
+Route::prefix('chef')->name('chef.')->middleware(['auth','verified', 'role:chef'])->group(function () {
     Route::get('/inventory', [InventoryController::class, 'inventory'])->name('inventory');
 });
 

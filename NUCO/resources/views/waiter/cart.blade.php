@@ -278,37 +278,29 @@
                         {{-- Action Buttons --}}
                         <div class="d-grid gap-2">
                             @if(!empty($cart))
-                                {{-- Checkout Button --}}
-                                <form method="POST" action="{{ route('waiter.cart.checkout') }}">
-                                    @csrf
-                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2"
-                                            style="background:#A4823B;color:#F5F0E5;border:none;border-radius:8px;padding:12px;font-weight:700; font-size:1rem;"
-                                            onclick="return confirm('Create order from cart and send to kitchen?')">
-                                        <i class="bi bi-bag-check-fill"></i>
-                                        Checkout
-                                    </button>
-                                </form>
-
-                                {{-- Clear Cart Button --}}
-                                <form method="POST" action="{{ route('waiter.cart.clear') }}">
-                                    @csrf
-                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2" 
-                                            style="background:#ffffff; color:#6b6b6b; border:1px solid #E9E6E2; border-radius:8px; padding:10px; font-weight:600;"
-                                            onclick="return confirm('Clear all items from cart? Table will remain selected.')">
-                                        <i class="bi bi-trash3"></i>
-                                        Clear Cart
-                                    </button>
-                                </form>
+                                {{-- Checkout Button - Open Modal --}}
+                                <button type="button" class="btn w-100 d-flex align-items-center justify-content-center gap-2"
+                                        data-bs-toggle="modal" data-bs-target="#checkoutModal"
+                                        style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700; box-shadow:0 4px 12px rgba(164,130,59,0.25);">
+                                    <i class="bi bi-cart-check"></i>
+                                    <span>Checkout</span>
+                                </button>
+                            @else
+                                <button type="button" class="btn w-100" disabled
+                                        style="background:#E9E6E2; color:#A1A09A; border:none; border-radius:10px; padding:12px; font-weight:700;">
+                                    <i class="bi bi-cart-x me-2"></i>
+                                    Cart is Empty
+                                </button>
                             @endif
 
-                            {{-- Cancel Order Button --}}
+                            {{-- ✅ UPDATED: Cancel Order Button (Thin Red Border like Delete Button) --}}
                             @if($selectedTable)
                                 <form method="POST" action="{{ route('waiter.tables.cancel') }}">
                                     @csrf
-                                    <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center gap-2" 
-                                            style="background:#ffffff; color:#dc3545; border:1px solid #dc3545; border-radius:8px; padding:10px; font-weight:600;"
-                                            onclick="return confirm('{{ !empty($cart) ? 'Cancel order and return to table selection? Cart will be cleared and table will be released.' : 'Cancel order and return to table selection? Table will be released.' }}')">
-                                        <i class="bi bi-x-circle"></i>
+                                    <button type="submit" class="btn w-100"
+                                            onclick="return confirm('Are you sure you want to cancel this order?')"
+                                            style="background:#ffffff; color:#dc3545; border:1px solid #dc3545; border-radius:10px; padding:10px; font-weight:600;">
+                                        <i class="bi bi-x-circle me-2"></i>
                                         Cancel Order
                                     </button>
                                 </form>
@@ -321,7 +313,102 @@
     </div>
 </div>
 
-<!-- Bootstrap JS -->
+{{-- ✅ UPDATED: Checkout Modal (Removed Info Alert) --}}
+<div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:14px; overflow:hidden;">
+            <div class="modal-header" style="background:#A4823B; color:#F5F0E5; border:none;">
+                <h5 class="modal-title fw-bold" id="checkoutModalLabel">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Customer Information
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ route('waiter.cart.checkout') }}">
+                @csrf
+                <div class="modal-body p-4">
+                    {{-- Table Info --}}
+                    @if($selectedTable)
+                        <div class="mb-3 p-3" style="background:#F5F0E5; border-radius:10px;">
+                            <div class="small text-muted mb-1">Table Number</div>
+                            <div class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
+                                {{ $selectedTable['table_number'] }}
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Cart Summary --}}
+                    <div class="mb-3 p-3" style="background:#F9F9F9; border-radius:10px;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total Items</span>
+                            <span class="fw-semibold">{{ $cartCount }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Total Price</span>
+                            <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
+                                Rp {{ number_format($cartTotal, 0, ',', '.') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Customer Name Input --}}
+                    <div class="mb-0">
+                        <label for="customer_name" class="form-label fw-bold" style="color:#4b3028;">
+                            Customer Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control @error('customer_name') is-invalid @enderror" 
+                               id="customer_name" 
+                               name="customer_name" 
+                               placeholder="Enter customer name"
+                               value="{{ old('customer_name') }}"
+                               required
+                               style="border-radius:10px; border:1px solid #E9E6E2; padding:12px;">
+                        @error('customer_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer" style="border:none; padding:16px 24px;">
+                    {{-- ✅ UPDATED: Cancel button (Thin Red Border) --}}
+                    <button type="button" class="btn" data-bs-dismiss="modal" 
+                            style="background:#ffffff; color:#dc3545; border:1px solid #dc3545; border-radius:10px; padding:10px 20px; font-weight:600;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn" 
+                            style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:10px 24px; font-weight:700;">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Confirm Checkout
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ✅ Auto-open modal if validation error exists --}}
+@if($errors->has('customer_name'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+    checkoutModal.show();
+});
+</script>
+@endif
+
+<!-- Bootstrap JS (needed for modal) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ✅ Auto-focus customer name input when modal opens
+document.getElementById('checkoutModal').addEventListener('shown.bs.modal', function () {
+    document.getElementById('customer_name').focus();
+});
+
+// ✅ Clear validation errors when modal closes
+document.getElementById('checkoutModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('customer_name').classList.remove('is-invalid');
+});
+</script>
 </body>
 </html>
