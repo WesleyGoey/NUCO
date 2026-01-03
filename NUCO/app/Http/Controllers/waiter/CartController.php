@@ -61,7 +61,7 @@ class CartController extends Controller
                 if (!empty($search)) {
                     $query->where('name', 'like', "%{$search}%");
                 }
-                
+
                 $c->products = $query->get();
                 $c->id = $c->category;
                 $c->name = $c->category;
@@ -76,6 +76,8 @@ class CartController extends Controller
                     return (string)$c->id === (string)$selectedCategory;
                 });
             }
+            
+            $allCategories = collect();
         }
 
         $selectedTable = session('selected_table') ?? null;
@@ -83,7 +85,17 @@ class CartController extends Controller
         $cartCount = array_sum(array_map(fn($i)=>(int)($i['quantity'] ?? 0), $cart ?: []));
         $cartTotal = array_sum(array_map(fn($i)=>(int)($i['subtotal'] ?? 0), $cart ?: []));
 
-        return view('waiter.cart', compact('categories', 'totalProductsCount', 'search', 'selectedCategory', 'selectedTable', 'cart', 'cartCount', 'cartTotal'));
+        return view('waiter.cart', compact(
+            'categories', 
+            'allCategories', 
+            'totalProductsCount', 
+            'search', 
+            'selectedCategory', 
+            'selectedTable', 
+            'cart', 
+            'cartCount', 
+            'cartTotal'
+        ));
     }
 
     public function updateNote(Request $request): RedirectResponse
@@ -97,7 +109,7 @@ class CartController extends Controller
         $key = (string)$data['product_id'];
 
         if (isset($cart[$key])) {
-            $cart[$key]['note'] = $data['note'] ?? '';
+            $cart[$key]['note'] = $data['note'] ?? null;
             session(['waiter_cart' => $cart]);
         }
 
@@ -117,11 +129,16 @@ class CartController extends Controller
         ]);
 
         $product = Product::find($data['product_id']);
+        if (!$product) {
+            return back()->with('error', 'Product not found.');
+        }
+
         $qty = (int) ($data['quantity'] ?? 1);
+        $subtotal = $product->price * $qty;
 
         $cart = session('waiter_cart', []);
-        $key = (string)$product->id;
-        
+        $key = (string) $product->id;
+
         if (isset($cart[$key])) {
             $cart[$key]['quantity'] += $qty;
             $cart[$key]['subtotal'] = $cart[$key]['quantity'] * $product->price;
@@ -131,8 +148,8 @@ class CartController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'quantity' => $qty,
-                'subtotal' => $qty * $product->price,
-                'note' => '',
+                'subtotal' => $subtotal,
+                'note' => null,
             ];
         }
 
@@ -143,45 +160,43 @@ class CartController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'product_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1'
         ]);
 
         $cart = session('waiter_cart', []);
         $key = (string)$data['product_id'];
 
         if (isset($cart[$key])) {
-            $cart[$key]['quantity'] = $data['quantity'];
-            $cart[$key]['subtotal'] = $cart[$key]['quantity'] * $cart[$key]['price'];
-            session(['waiter_cart' => $cart]);
+            $product = Product::find($data['product_id']);
+            if ($product) {
+                $cart[$key]['quantity'] = (int) $data['quantity'];
+                $cart[$key]['subtotal'] = $cart[$key]['quantity'] * $product->price;
+            }
         }
 
+        session(['waiter_cart' => $cart]);
         return redirect()->route('waiter.cart');
     }
 
     public function remove(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
+            'product_id' => 'required|integer'
         ]);
 
         $cart = session('waiter_cart', []);
         $key = (string)$data['product_id'];
+        unset($cart[$key]);
 
-        if (isset($cart[$key])) {
-            unset($cart[$key]);
-            session(['waiter_cart' => $cart]);
-        }
-
+        session(['waiter_cart' => $cart]);
         return redirect()->route('waiter.cart');
     }
 
     public function clear(): RedirectResponse
     {
-        // Only clear the cart for "Clear Cart" action.
-        // Do not release selected table or navigate away.
         session()->forget('waiter_cart');
-        return redirect()->route('waiter.cart')->with('success', 'Cart cleared.');
+        return redirect()->route('waiter.cart');
     }
 
     public function checkout(Request $request): RedirectResponse
@@ -206,7 +221,7 @@ class CartController extends Controller
                 'restaurant_table_id' => $selectedTable['id'],
                 'order_name' => 'Order - ' . now()->format('YmdHis'),
                 'total_price' => $total,
-                'status' => 'pending', // ✅ Order dibuat dengan status pending
+                'status' => 'pending',
                 'discount_id' => null,
             ]);
 
@@ -221,14 +236,12 @@ class CartController extends Controller
                 ]);
             }
 
-            // Mark table occupied
             $table = RestaurantTable::find($selectedTable['id']);
             if ($table && $table->status !== 'occupied') {
                 $table->update(['status' => 'occupied']);
             }
         });
 
-        // Clear cart
         session()->forget('waiter_cart');
         return redirect()->route('waiter.tables')->with('success', 'Order created.');
     }

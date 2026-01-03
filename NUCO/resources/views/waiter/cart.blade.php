@@ -61,11 +61,7 @@
                     <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">{{ $totalProductsCount }}</span>
                 </a>
 
-                @php
-                    $allCategoriesForButtons = \App\Models\Category::orderBy('id')->get();
-                @endphp
-                
-                @foreach($allCategoriesForButtons as $cat)
+                @foreach($allCategories as $cat)
                     @php
                         $catId = (string) $cat->id;
                         $active = !empty($selectedCategory) && (string)$selectedCategory === $catId;
@@ -239,20 +235,20 @@
                                                     <button type="submit" class="btn btn-sm btn-outline-secondary" 
                                                             style="width:30px; height:30px; padding:0; border-radius:6px;">
                                                         <i class="bi bi-plus"></i>
-                                                    </form>
-                                                </div>
-
-                                                {{-- Delete Button --}}
-                                                <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
-                                                    @csrf
-                                                    <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                            style="width:30px; height:30px; padding:0; border-radius:6px;"
-                                                            onclick="return confirm('Remove this item from cart?')">
-                                                        <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
+
+                                            {{-- Delete Button --}}
+                                            <form method="POST" action="{{ route('waiter.cart.remove') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="product_id" value="{{ $item['product_id'] }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        style="width:30px; height:30px; padding:0; border-radius:6px;"
+                                                        onclick="return confirm('Remove this item from cart?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 @endforeach
@@ -266,9 +262,10 @@
                             </div>
                         @endif
 
-                        {{-- Action Buttons - Always visible --}}
+                        {{-- Action Buttons with proper conditions --}}
                         <div class="d-grid gap-2">
                             @if(!empty($cart))
+                                {{-- Checkout Button (hanya tampil jika ada items di cart) --}}
                                 <form method="POST" action="{{ route('waiter.cart.checkout') }}">
                                     @csrf
                                     <button type="submit" class="btn w-100 d-flex align-items-center justify-content-center"
@@ -278,25 +275,30 @@
                                         Checkout
                                     </button>
                                 </form>
- 
-                                 <form method="POST" action="{{ route('waiter.cart.clear') }}">
-                                     @csrf
-                                     <button type="submit" class="btn btn-outline-secondary w-100" 
-                                             style="border-radius:8px;padding:8px;"
-                                             onclick="return confirm('Clear all items from cart?')">
-                                         <i class="bi bi-trash3 me-1"></i> Clear Cart
-                                     </button>
-                                 </form>
- 
-                                 <form method="POST" action="{{ route('waiter.tables.cancel') }}">
-                                     @csrf
-                                     <button type="submit" class="btn btn-outline-danger w-100" 
-                                             style="border-radius:8px;padding:8px;"
-                                             onclick="return confirm('Cancel order and return to table selection? {{ !empty($cart) ? 'Cart will be cleared and table will be released.' : 'Table will be released.' }}')">
-                                         <i class="bi bi-x-circle me-1"></i> Cancel Order
-                                     </button>
-                                 </form>
-                             @endif
+
+                                {{-- Clear Cart Button (hanya tampil jika ada items) --}}
+                                <form method="POST" action="{{ route('waiter.cart.clear') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-secondary w-100" 
+                                            style="border-radius:8px;padding:8px;"
+                                            onclick="return confirm('Clear all items from cart? Table will remain selected.')">
+                                        <i class="bi bi-trash3 me-1"></i> Clear Cart
+                                    </button>
+                                </form>
+                            @endif
+
+                            {{-- Cancel Order Button (selalu tampil jika ada table selected) --}}
+                            @if($selectedTable)
+                                <form method="POST" action="{{ route('waiter.tables.cancel') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-danger w-100" 
+                                            style="border-radius:8px;padding:10px;font-weight:600;"
+                                            onclick="return confirm('{{ !empty($cart) ? 'Cancel order and return to table selection? Cart will be cleared and table will be released.' : 'Release table and return to table selection?' }}')">
+                                        <i class="bi bi-x-circle me-2"></i> 
+                                        {{ !empty($cart) ? 'Cancel Order' : 'Release Table' }}
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>

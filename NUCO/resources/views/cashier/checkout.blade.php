@@ -68,7 +68,7 @@
                             </div>
                         </div>
 
-                        <!-- Discount Info -->
+                        <!-- Discount Info (if already applied) -->
                         @if($order->discount)
                             <div class="mb-3 p-2" style="background:#FFF9E6; border-radius:8px;">
                                 <div class="small d-flex align-items-center">
@@ -115,18 +115,51 @@
                             <h5 class="modal-title fw-bold" id="paymentModalLabel{{ $order->id }}">Process Payment</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form method="POST" action="{{ route('cashier.payment.process') }}">
+                        <form method="POST" action="{{ route('cashier.payment.process') }}" id="paymentForm{{ $order->id }}">
                             @csrf
                             <input type="hidden" name="order_id" value="{{ $order->id }}">
-                            <input type="hidden" name="amount" value="{{ $order->total_price }}">
+                            <input type="hidden" name="amount" id="finalAmount{{ $order->id }}" value="{{ $order->total_price }}">
                             
                             <div class="modal-body p-4">
                                 <div class="mb-3">
                                     <div class="small text-muted mb-1">Order #{{ $order->id }}</div>
                                     <div class="fw-bold" style="font-size:1.5rem; color:#A4823B;">
-                                        Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                        Rp <span id="displayAmount{{ $order->id }}">{{ number_format($order->total_price, 0, ',', '.') }}</span>
                                     </div>
                                 </div>
+
+                                {{-- ✅ NEW: Discount Selection --}}
+                                @if($activeDiscounts->isNotEmpty())
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Apply Discount (Optional)</label>
+                                        <select name="discount_id" class="form-select" id="discountSelect{{ $order->id }}" 
+                                                style="border-radius:10px; padding:10px;"
+                                                onchange="updateTotal{{ $order->id }}()">
+                                            <option value="">No Discount</option>
+                                            @foreach($activeDiscounts as $discount)
+                                                @php
+                                                    // Check if order meets minimum requirement
+                                                    $canApply = !$discount->min_order_amount || $order->total_price >= $discount->min_order_amount;
+                                                @endphp
+                                                <option value="{{ $discount->id }}" 
+                                                        data-type="{{ $discount->type }}"
+                                                        data-value="{{ $discount->value }}"
+                                                        {{ !$canApply ? 'disabled' : '' }}
+                                                        {{ $order->discount_id == $discount->id ? 'selected' : '' }}>
+                                                    {{ $discount->name }} 
+                                                    ({{ $discount->type === 'percent' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0, ',', '.') }})
+                                                    @if($discount->min_order_amount)
+                                                        - Min Rp {{ number_format($discount->min_order_amount, 0, ',', '.') }}
+                                                    @endif
+                                                    @if(!$canApply)
+                                                        (Not eligible)
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div class="small text-muted mt-1">Select a discount to reduce the total amount</div>
+                                    </div>
+                                @endif
 
                                 <div class="mb-4">
                                     <label class="form-label fw-semibold">Payment Method</label>
@@ -167,6 +200,47 @@
                                 </button>
                             </div>
                         </form>
+
+                        {{-- ✅ JavaScript to calculate discount in real-time --}}
+                        <script>
+                        function updateTotal{{ $order->id }}() {
+                            const select = document.getElementById('discountSelect{{ $order->id }}');
+                            const originalTotal = {{ $order->total_price }};
+                            const displayAmount = document.getElementById('displayAmount{{ $order->id }}');
+                            const finalAmountInput = document.getElementById('finalAmount{{ $order->id }}');
+
+                            if (!select || !displayAmount || !finalAmountInput) return;
+
+                            const selectedOption = select.options[select.selectedIndex];
+                            
+                            if (!selectedOption || !selectedOption.value) {
+                                // No discount selected
+                                displayAmount.textContent = originalTotal.toLocaleString('id-ID');
+                                finalAmountInput.value = originalTotal;
+                                return;
+                            }
+
+                            const discountType = selectedOption.getAttribute('data-type');
+                            const discountValue = parseFloat(selectedOption.getAttribute('data-value'));
+                            
+                            let discountAmount = 0;
+                            if (discountType === 'percent') {
+                                discountAmount = (originalTotal * discountValue) / 100;
+                            } else {
+                                discountAmount = discountValue;
+                            }
+
+                            const finalTotal = Math.max(0, originalTotal - discountAmount);
+                            
+                            displayAmount.textContent = finalTotal.toLocaleString('id-ID');
+                            finalAmountInput.value = finalTotal;
+                        }
+
+                        // Initialize on page load (if discount already applied)
+                        document.addEventListener('DOMContentLoaded', function() {
+                            updateTotal{{ $order->id }}();
+                        });
+                        </script>
                     </div>
                 </div>
             </div>
@@ -177,6 +251,9 @@
                         <i class="bi bi-check-circle" style="font-size:4rem; color:#2D7A3B;"></i>
                         <h5 class="mt-3 mb-2">All Orders Paid!</h5>
                         <p class="text-muted">There are no unpaid orders at the moment.</p>
+                        <a href="{{ route('cashier.order.history') }}" class="btn" style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:10px 20px; font-weight:600;">
+                            View Order History
+                        </a>
                     </div>
                 </div>
             </div>

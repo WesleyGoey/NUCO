@@ -37,12 +37,8 @@
                     <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">{{ $totalProductsCount }}</span>
                 </a>
 
-                @php
-                    // Untuk tombol kategori, kita perlu semua kategori (bukan yang sudah difilter)
-                    $allCategoriesForButtons = \App\Models\Category::orderBy('id')->get();
-                @endphp
-                
-                @foreach($allCategoriesForButtons as $cat)
+                {{-- ✅ FIXED: Gunakan variable dari controller, bukan query di view --}}
+                @foreach($allCategories as $cat)
                     @php
                         $catId = (string) $cat->id;
                         $active = !empty($selectedCategory) && (string)$selectedCategory === $catId;
@@ -94,7 +90,7 @@
                         <div class="row g-3">
                             @foreach($category->products as $product)
                                 <div class="col-12 col-sm-6 col-md-4">
-                                    {{-- Product Card (inline) --}}
+                                    {{-- Product Card --}}
                                     <div class="card h-100 shadow-sm border-0" style="border-radius:12px; overflow:hidden;">
                                         <div style="border-radius:12px 12px 0 0; overflow:hidden;">
                                             <div class="ratio ratio-4x3">

@@ -58,10 +58,12 @@ class MenuController extends Controller
             $categories = $cats->map(function ($c) use ($search, $selectedCategory) {
                 $query = Product::where('category', $c->category)->orderBy('id','asc');
                 
+
+                
                 if (!empty($search)) {
                     $query->where('name', 'like', "%{$search}%");
                 }
-                
+
                 $c->products = $query->get();
                 $c->id = $c->category;
                 $c->name = $c->category;
@@ -76,8 +78,12 @@ class MenuController extends Controller
                     return (string)$c->id === (string)$selectedCategory;
                 });
             }
+
+            // ✅ NEW: Load all categories untuk filter buttons (fallback mode)
+            $allCategories = collect();
         }
 
-        return view('menu', compact('categories', 'totalProductsCount', 'search', 'selectedCategory'));
+        // ✅ FIXED: Tambahkan $allCategories ke compact()
+        return view('menu', compact('categories', 'allCategories', 'totalProductsCount', 'search', 'selectedCategory'));
     }
 }
