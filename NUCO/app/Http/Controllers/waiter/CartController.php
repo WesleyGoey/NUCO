@@ -186,32 +186,27 @@ class CartController extends Controller
 
     public function checkout(Request $request): RedirectResponse
     {
-        $selectedTable = session('selected_table');
         $cart = session('waiter_cart', []);
+        $selectedTable = session('selected_table');
 
-        if (empty($cart)) {
-            return redirect()->route('waiter.cart')->with('error', 'Cart is empty.');
-        }
-        if (empty($selectedTable) || empty($selectedTable['id'])) {
-            return redirect()->route('waiter.cart')->with('error', 'Please select a table first.');
+        if (empty($cart) || !$selectedTable) {
+            return redirect()->route('waiter.cart')->with('error', 'Cart is empty or no table selected.');
         }
 
-        // capture authenticated user model and pass into transaction
         $user = Auth::user();
         if (!$user) {
             return redirect()->route('waiter.cart')->with('error', 'You must be logged in to checkout.');
         }
 
         DB::transaction(function () use ($cart, $selectedTable, $user) {
-             // compute total
-             $total = array_sum(array_map(fn($i)=>(int)($i['subtotal'] ?? 0), $cart));
- 
+            $total = array_sum(array_map(fn($i)=>(int)($i['subtotal'] ?? 0), $cart));
+
             $order = Order::create([
                 'user_id' => $user->id,
                 'restaurant_table_id' => $selectedTable['id'],
                 'order_name' => 'Order - ' . now()->format('YmdHis'),
                 'total_price' => $total,
-                'status' => 'pending',
+                'status' => 'pending', // ✅ Order dibuat dengan status pending
                 'discount_id' => null,
             ]);
 
@@ -224,30 +219,16 @@ class CartController extends Controller
                     'subtotal' => (int) ($item['subtotal'] ?? 0),
                     'note' => $item['note'] ?? null,
                 ]);
+            }
 
-                // decrement ingredients stock and log
-                foreach ($product->ingredients as $ing) {
-                    $need = (float) $ing->pivot->amount_needed * (int) ($item['quantity'] ?? 1);
-                    if ($need <= 0) continue;
-                    // decrement (use DB safe method)
-                    $ing->decrement('current_stock', $need);
-                    InventoryLog::create([
-                        'ingredient_id' => $ing->id,
-                        'user_id' => $user->id,
-                        'change_amount' => -$need,
-                        'type' => 'order',
-                    ]);
-                 }
-             }
-
-            // mark table occupied (if not already)
+            // Mark table occupied
             $table = RestaurantTable::find($selectedTable['id']);
             if ($table && $table->status !== 'occupied') {
                 $table->update(['status' => 'occupied']);
             }
         });
 
-        // clear cart (keep selected_table)
+        // Clear cart
         session()->forget('waiter_cart');
         return redirect()->route('waiter.tables')->with('success', 'Order created.');
     }
