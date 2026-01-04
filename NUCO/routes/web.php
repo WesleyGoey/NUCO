@@ -18,6 +18,7 @@ use App\Http\Controllers\Owner\PaymentController as OwnerPaymentController;
 use App\Http\Controllers\Owner\ReviewController as OwnerReviewController;
 use App\Http\Controllers\Owner\TableController as OwnerTableController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB; // ⭐ ADD THIS LINE
 
 require __DIR__ . '/auth.php';
 
@@ -149,4 +150,75 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ⚠️ TEMPORARY DEBUG ROUTES - Remove after testing!
+Route::get('/debug/db', function () {
+    try {
+        // Test 1: Check database connection
+        DB::connection()->getPdo();
+        $dbConnected = true;
+        $dbError = null;
+    } catch (\Exception $e) {
+        $dbConnected = false;
+        $dbError = $e->getMessage();
+    }
+
+    // Test 2: Count users table
+    try {
+        $usersCount = DB::table('users')->count();
+    } catch (\Exception $e) {
+        $usersCount = 'Error: ' . $e->getMessage();
+    }
+
+    // Test 3: Get database name
+    try {
+        $dbName = DB::connection()->getDatabaseName();
+    } catch (\Exception $e) {
+        $dbName = 'Error: ' . $e->getMessage();
+    }
+
+    return response()->json([
+        'database_connected' => $dbConnected,
+        'database_error' => $dbError,
+        'database_name' => $dbName,
+        'users_count' => $usersCount,
+        'db_host' => config('database.connections.mysql.host'),
+        'db_port' => config('database.connections.mysql.port'),
+        'db_database' => config('database.connections.mysql.database'),
+        'db_username' => config('database.connections.mysql.username'),
+    ]);
+});
+
+Route::get('/debug/routes', function () {
+    $routeCollection = Route::getRoutes();
+    
+    $routes = [];
+    foreach ($routeCollection as $route) {
+        $routes[] = [
+            'method' => implode('|', $route->methods()),
+            'uri' => $route->uri(),
+            'name' => $route->getName(),
+        ];
+    }
+    
+    // Take first 50 routes
+    $first50Routes = array_slice($routes, 0, 50);
+    
+    return response()->json([
+        'total_routes' => count($routes),
+        'first_50_routes' => $first50Routes,
+    ]);
+});
+
+Route::get('/debug/app', function () {
+    return response()->json([
+        'app_name' => config('app.name'),
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+        'app_url' => config('app.url'),
+        'laravel_version' => app()->version(),
+        'php_version' => PHP_VERSION,
+        'octane_server' => config('octane.server'),
+    ]);
 });
