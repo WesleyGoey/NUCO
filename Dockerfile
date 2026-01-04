@@ -66,7 +66,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD php artisan inspire || exit 1
 
-# ✅ FIX: Run migrations & seeding SYNCHRONOUSLY, then start server
+# ✅ Start command
 CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-not-set}" && \
@@ -74,8 +74,5 @@ CMD echo "=== Starting Deployment ===" && \
     php artisan migrate:fresh --force --seed && \
     echo "=== Creating Storage Link ===" && \
     php artisan storage:link && \
-    echo "=== Warming up application ===" && \
-    php artisan config:cache && \
-    php artisan route:cache && \
     echo "=== Starting Laravel Server ===" && \
     exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
