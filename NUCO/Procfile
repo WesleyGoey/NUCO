@@ -1,2 +1,17 @@
-web: cd /app/NUCO && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500
-release: cd /app/NUCO && php artisan migrate --force && php artisan storage:link
+[phases.setup]
+nixPkgs = ["php83", "php83Extensions.mbstring", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.curl", "php83Extensions.xml", "php83Extensions.zip", "php83Extensions.gd", "php83Extensions.intl", "nodejs"]
+
+[phases.install]
+cmds = ["cd NUCO && composer install --no-dev --optimize-autoloader --no-interaction"]
+
+[phases.build]
+cmds = [
+    "cd NUCO && npm install",
+    "cd NUCO && npm run build",
+    "cd NUCO && php artisan config:cache",
+    "cd NUCO && php artisan route:cache",
+    "cd NUCO && php artisan view:cache"
+]
+
+[start]
+cmd = "cd NUCO && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500"
