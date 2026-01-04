@@ -1,2 +1,2 @@
-web: cd /app/NUCO && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500
-release: cd /app/NUCO && php artisan migrate --force && php artisan storage:link
+web: cd NUCO && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500
+release: cd NUCO && php artisan migrate --force && php artisan storage:link
