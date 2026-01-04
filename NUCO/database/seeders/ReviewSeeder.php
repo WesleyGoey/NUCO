@@ -5,12 +5,13 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Review;
 use App\Models\User;
+use Faker\Factory as Faker;
 
 class ReviewSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = fake();
+        $faker = Faker::create('id_ID');
 
         // only users with role 'reviewer' can create reviews
         $reviewers = User::where('role', 'reviewer')->get();

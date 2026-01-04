@@ -6,12 +6,13 @@ use Illuminate\Database\Seeder;
 use App\Models\InventoryLog;
 use App\Models\Ingredient;
 use App\Models\User;
+use Faker\Factory as Faker;
 
 class InventoryLogSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = fake();
+        $faker = Faker::create('id_ID');
 
         $ingredients = Ingredient::all();
         $users = User::all();
