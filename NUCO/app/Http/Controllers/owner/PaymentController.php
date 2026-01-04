@@ -14,10 +14,10 @@ class PaymentController extends Controller
             ->orderBy('id', 'asc')
             ->paginate(20);
 
-        // ✅ FIXED: Use 'status' instead of 'payment_status'
+        // ✅ Calculate statistics
         $totalRevenue = Payment::where('status', 'success')->sum('amount');
-        $successfulTransactions = Payment::where('status', 'success')->count();
+        $totalTransactions = Payment::where('status', 'success')->count(); // ✅ FIXED: Changed variable name
 
-        return view('owner.payments.index', compact('payments', 'totalRevenue', 'successfulTransactions'));
+        return view('owner.payments.index', compact('payments', 'totalRevenue', 'totalTransactions'));
     }
 }
