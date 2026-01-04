@@ -1,7 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[deploy]
-startCommand = "cd NUCO && php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500"
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
