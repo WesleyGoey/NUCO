@@ -71,16 +71,5 @@ RUN chmod -R 755 storage bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start server
-CMD echo "=== RAILWAY STARTUP ===" && \
-    echo "PORT: ${PORT:-8000}" && \
-    echo "APP_ENV: ${APP_ENV:-production}" && \
-    echo "APP_DEBUG: ${APP_DEBUG:-false}" && \
-    php artisan config:clear && \
-    php artisan route:clear && \
-    echo "=== Running migrations ===" && \
-    (php artisan migrate --force 2>&1 || echo "Migration failed or skipped") && \
-    echo "=== Creating storage symlink ===" && \
-    (php artisan storage:link 2>&1 || echo "Storage link already exists") && \
-    echo "=== Starting Laravel Server ===" && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
+# Railway will use Procfile to start the server
+# No CMD needed - Railway handles this via Procfile
