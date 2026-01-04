@@ -66,7 +66,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD php artisan inspire || exit 1
 
-# ✅ FIXED: Force Laravel to accept external connections
+# ✅ FIXED: Use php -S with proper router for Laravel
 CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-not-set}" && \
@@ -75,4 +75,4 @@ CMD echo "=== Starting Deployment ===" && \
     echo "=== Creating Storage Link ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
-    php -S 0.0.0.0:${PORT:-8000} -t public
+    php -S 0.0.0.0:${PORT:-8000} -t public public/index.php
