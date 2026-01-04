@@ -33,20 +33,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /app/NUCO
 
-# Copy composer files
-COPY NUCO/composer.json NUCO/composer.lock ./
+# ✅ FIX: Copy application FIRST (before composer install)
+COPY NUCO/ .
 
-# ✅ FIX: Install ALL dependencies (including faker)
+# ✅ Now install dependencies (artisan exists now)
 RUN composer install --optimize-autoloader --no-interaction --prefer-dist
-
-# Copy package files
-COPY NUCO/package.json NUCO/package-lock.json ./
 
 # Install Node dependencies
 RUN npm ci
-
-# Copy application
-COPY NUCO/ .
 
 # Build frontend assets
 RUN npm run build && \
@@ -56,7 +50,8 @@ RUN npm run build && \
 
 # Optimize Laravel
 RUN composer dump-autoload --optimize
-RUN php artisan package:discover --ansi
+
+# Clear caches
 RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
@@ -71,7 +66,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD php artisan inspire || exit 1
 
-# ✅ FIXED: Migrate fresh untuk Railway deployment
+# ✅ Start command
 CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-not-set}" && \
@@ -81,8 +76,3 @@ CMD echo "=== Starting Deployment ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
-
-# ✅ Verify Faker is installed
-RUN echo "=== Verifying Faker Installation ===" && \
-    php -r "require 'vendor/autoload.php'; echo class_exists('Faker\\Factory') ? 'Faker OK' : 'Faker MISSING';" && \
-    echo ""
