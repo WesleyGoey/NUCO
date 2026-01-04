@@ -19,22 +19,25 @@ use App\Http\Controllers\Owner\ReviewController as OwnerReviewController;
 use App\Http\Controllers\Owner\TableController as OwnerTableController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 require __DIR__ . '/auth.php';
 
 // Health check route for Railway debugging
 Route::get('/health', function () {
     try {
-        // ✅ UPDATED: Simple health check tanpa DB query
+        DB::connection()->getPdo();
         return response()->json([
-            'status' => 'healthy',
+            'status' => 'ok',
             'timestamp' => now()->toIso8601String(),
+            'database' => 'connected'
         ], 200);
     } catch (\Exception $e) {
         return response()->json([
-            'status' => 'unhealthy',
+            'status' => 'error',
+            'message' => 'Database connection failed',
             'error' => $e->getMessage()
-        ], 500);
+        ], 503);
     }
 });
 

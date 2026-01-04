@@ -14,7 +14,7 @@ class IngredientSeeder extends Seeder
 
         $units = ['kg', 'g', 'ltr', 'pcs'];
 
-        for ($i = 1; $i <= 12; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             Ingredient::create([
                 'name' => ucfirst($faker->word()) . " Ingredient",
                 'unit' => $faker->randomElement($units),
