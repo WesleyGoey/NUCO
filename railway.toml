@@ -1,3 +1,7 @@
+cd /Users/winstongoey/Documents/GitHub/NUCO
+
+# Buat railway.toml
+cat > railway.toml << 'EOF'
 [build]
 builder = "nixpacks"
 
@@ -8,3 +12,9 @@ rootDirectory = "NUCO"
 startCommand = "php artisan octane:start --server=frankenphp --host=0.0.0.0 --port=$PORT --workers=2 --max-requests=500"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10
+EOF
+
+# Commit & push
+git add railway.toml
+git commit -m "fix: Set root directory to NUCO for Railway deployment"
+git push origin main
