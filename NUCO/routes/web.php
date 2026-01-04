@@ -35,8 +35,7 @@ Route::get('/health', function () {
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Database connection failed',
-            'error' => $e->getMessage()
+            'message' => 'Database connection failed'
         ], 503);
     }
 });
