@@ -72,4 +72,7 @@ RUN chmod -R 755 storage bootstrap/cache
 EXPOSE 8000
 
 # Start the Laravel development server using Railway's PORT variable
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
+CMD echo "=== Starting Laravel Server ===" && \
+    echo "PORT: ${PORT:-8000}" && \
+    echo "APP_KEY: ${APP_KEY:0:20}..." && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
