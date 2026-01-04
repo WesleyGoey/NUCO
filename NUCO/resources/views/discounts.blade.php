@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-xl py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 fw-bold">Discounts</h1>
+        <h1 class="h3 mb-0 fw-bold">Active Discounts</h1>
         <small class="text-muted">Latest promos</small>
     </div>
 
@@ -19,21 +19,33 @@
                 $periodLabel = $firstPeriod
                     ? ($firstPeriod->end_date ? "{$firstPeriod->start_date} — {$firstPeriod->end_date}" : "{$firstPeriod->start_date} — ongoing")
                     : null;
-                $img = $discount->image_path ? $discount->image_path : null;
+                
+                $img = $discount->image_path ? asset('storage/' . $discount->image_path) : null;
                 $initial = strtoupper(substr($discount->name, 0, 1));
             @endphp
 
             <div class="card rounded-3 shadow-sm overflow-hidden border-0">
                 <div class="row g-0 align-items-stretch">
-                    @if($img)
-                        <div class="col-12 col-md-4" style="min-height:160px; background-image:url('{{ $img }}'); background-size:cover; background-position:center;"></div>
-                    @else
-                        <div class="col-12 col-md-4 d-flex align-items-center justify-content-center" style="min-height:160px; background:#FFFFFF;">
-                            <span class="fw-bold text-dark" style="font-size:48px;">{{ $initial }}</span>
-                        </div>
-                    @endif
+                    <div class="col-12 col-md-3">
+                        @if($img)
+                            <div class="ratio ratio-4x3">
+                                <img src="{{ $img }}" 
+                                     alt="{{ $discount->name }}"
+                                     style="width:100%; height:100%; object-fit:cover; display:block;">
+                            </div>
+                        @else
+                            {{-- ✅ FINAL: 16px icon (much smaller!) --}}
+                            <div class="ratio ratio-4x3 d-flex align-items-center justify-content-center" 
+                                 style="background:#F5F0E5;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A4823B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                    <circle cx="7" cy="7" r="1.5" fill="#A4823B"/>
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
 
-                    <div class="col-12 col-md-8">
+                    <div class="col-12 col-md-9">
                         <div class="p-4 d-flex flex-column h-100">
                             <div class="d-flex">
                                 <div class="flex-grow-1 pe-3">
@@ -55,13 +67,14 @@
                                         <div class="text-muted small">Period: {{ $periodLabel }}</div>
                                     @endif
 
-                                    @if(!empty($discount->description))
-                                        <p class="mt-3 mb-0 text-muted" style="line-height:1.4;">{{ $discount->description }}</p>
+                                    @if($firstPeriod && !empty($firstPeriod->description))
+                                        <p class="mt-3 mb-0 text-muted" style="line-height:1.4;">{{ $firstPeriod->description }}</p>
                                     @endif
                                 </div>
 
                                 <div class="d-flex align-items-start">
-                                    <div class="bg-white border rounded-3 text-center p-3 ms-3" style="width:120px; border-color: rgba(164,130,59,0.12); box-shadow: 0 8px 20px rgba(0,0,0,0.04);">
+                                    <div class="bg-white border rounded-3 text-center p-3 ms-3" 
+                                         style="width:120px; border-color: rgba(164,130,59,0.12); box-shadow: 0 8px 20px rgba(0,0,0,0.04);">
                                         @if($isAmount)
                                             <div class="fw-bold" style="color:#A4823B; font-size:1.25rem;">{{ $valueNumber }}</div>
                                             <div class="small text-muted mt-1">FLAT</div>
@@ -74,22 +87,31 @@
                             </div>
 
                             <div class="mt-auto pt-3">
-                                <div class="rounded" style="height:10px; background: linear-gradient(90deg,#A4823B 0%,#D6BB7F 100%); box-shadow:0 6px 16px rgba(164,130,59,0.12);"></div>
+                                <div class="rounded" 
+                                     style="height:10px; background: linear-gradient(90deg,#A4823B 0%,#D6BB7F 100%); box-shadow:0 6px 16px rgba(164,130,59,0.12);"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="text-center text-muted py-4">No discounts available</div>
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-tag" style="font-size:3rem; color:#E9E6E2;"></i>
+                <div class="mt-3">No active discounts at the moment.</div>
+            </div>
         @endforelse
     </div>
 </div>
 
 <style>
 @media (max-width: 767.98px) {
-    .card .p-4 { padding: 1rem; }
-    .card .bg-white { width:100% !important; margin-top:0.75rem; }
+    .card .p-4 { 
+        padding: 1rem !important; 
+    }
+    .card .bg-white { 
+        width:100% !important; 
+        margin-top:0.75rem; 
+    }
 }
 </style>
 @endsection

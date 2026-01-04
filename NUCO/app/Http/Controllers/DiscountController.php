@@ -8,23 +8,32 @@ use Illuminate\View\View;
 class DiscountController extends Controller
 {
     /**
-     * Show list of discounts and whether each is active (by period).
+     * ✅ Show only ACTIVE discounts (filtered by period)
      */
     public function index(): View
     {
         $today = now()->toDateString();
 
-        // load only periods that are currently valid
+        // ✅ Load only periods that are currently valid (active)
         $discounts = Discount::with(['periods' => function ($q) use ($today) {
             $q->whereDate('start_date', '<=', $today)
               ->where(function ($q2) use ($today) {
                   $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
               });
-        }])->get()
-          ->map(function ($d) {
-              $d->is_active = $d->periods->isNotEmpty();
-              return $d;
-          });
+        }])
+        // ✅ FILTER: Only show discounts that have active periods
+        ->whereHas('periods', function ($q) use ($today) {
+            $q->whereDate('start_date', '<=', $today)
+              ->where(function ($q2) use ($today) {
+                  $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
+              });
+        })
+        ->orderBy('name', 'asc')
+        ->get()
+        ->map(function ($d) {
+            $d->is_active = $d->periods->isNotEmpty();
+            return $d;
+        });
 
         return view('discounts', compact('discounts'));
     }

@@ -100,8 +100,17 @@
                                                          alt="{{ $product->name }}" 
                                                          style="width:100%; height:100%; object-fit:cover; display:block;">
                                                 @else
+                                                    {{-- ✅ UPDATED: Coffee/Restaurant icon (better represents food/beverage) --}}
                                                     <div class="d-flex align-items-center justify-content-center w-100 h-100"
-                                                         style="background:#FFFFFF; border:1px dashed rgba(0,0,0,0.06);"></div>
+                                                         style="background:#F5F0E5;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#A4823B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                                                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                                                            <line x1="6" y1="1" x2="6" y2="4"/>
+                                                            <line x1="10" y1="1" x2="10" y2="4"/>
+                                                            <line x1="14" y1="1" x2="14" y2="4"/>
+                                                        </svg>
+                                                    </div>
                                                 @endif
                                             </div>
                                         </div>

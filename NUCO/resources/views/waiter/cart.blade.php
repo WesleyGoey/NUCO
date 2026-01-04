@@ -127,8 +127,15 @@
                                                          alt="{{ $product->name }}" 
                                                          style="width:100%; height:100%; object-fit:cover; display:block;">
                                                 @else
+                                                    {{-- ✅ UPDATED: Bowl/Plate icon --}}
                                                     <div class="d-flex align-items-center justify-content-center w-100 h-100"
-                                                         style="background:#FFFFFF; border:1px dashed rgba(0,0,0,0.06);"></div>
+                                                         style="background:#F5F0E5;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A4823B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                                            <path d="M12 2v20"/>
+                                                            <path d="M2 12h20"/>
+                                                        </svg>
+                                                    </div>
                                                 @endif
                                             </div>
                                         </div>
