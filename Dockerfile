@@ -67,12 +67,12 @@ RUN chmod -R 755 storage bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# ✅ FIXED: Gunakan Railway's dynamic PORT
+# ✅ FIXED: Migrate fresh untuk Railway deployment
 CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-not-set}" && \
     echo "=== Running Migrations ===" && \
-    php artisan migrate --force && \
+    php artisan migrate:fresh --force --seed && \
     echo "=== Creating Storage Link ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
