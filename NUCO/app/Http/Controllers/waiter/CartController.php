@@ -188,7 +188,6 @@ class CartController extends Controller
 
     public function checkout(Request $request): RedirectResponse
     {
-        // ✅ Step 1: Log request data
         Log::info('Checkout started', [
             'user_id' => Auth::id(),
             'request_data' => $request->all()
@@ -201,7 +200,6 @@ class CartController extends Controller
         $cart = session('cart', []);
         $selectedTable = session('selected_table');
 
-        // ✅ Step 2: Log session data
         Log::info('Session data', [
             'cart' => $cart,
             'selected_table' => $selectedTable
@@ -219,7 +217,6 @@ class CartController extends Controller
 
         $total = array_sum(array_map(fn($i) => (int)($i['subtotal'] ?? 0), $cart));
 
-        // ✅ Step 3: Log calculated total
         Log::info('Cart total calculated', [
             'total' => $total,
             'cart_items' => count($cart)
@@ -228,9 +225,8 @@ class CartController extends Controller
         try {
             $orderId = null;
 
-            // ✅ Use transaction with error handling
             DB::transaction(function () use ($validated, $cart, $selectedTable, $total, &$orderId) {
-                // ✅ Step 4: Lock the table
+                // Lock the table
                 $table = RestaurantTable::where('id', $selectedTable['id'])
                     ->lockForUpdate()
                     ->first();
@@ -245,7 +241,7 @@ class CartController extends Controller
                     'table_number' => $table->table_number
                 ]);
 
-                // ✅ Step 5: Create order
+                // Create order
                 $order = Order::create([
                     'user_id' => Auth::id(),
                     'restaurant_table_id' => $selectedTable['id'],
@@ -263,23 +259,23 @@ class CartController extends Controller
                     'status' => $order->status
                 ]);
 
-                // ✅ Step 6: Attach products to order
+                // ✅ FIX: Attach products with notes
                 foreach ($cart as $productId => $item) {
                     $order->products()->attach($productId, [
-                        'quantity' => $item['quantity'],
-                        'subtotal' => $item['subtotal'],
-                        'note' => $item['note'] ?? null,
+                        'quantity' => $item['quantity'] ?? 1,
+                        'subtotal' => $item['subtotal'] ?? 0,
+                        'note' => $item['notes'] ?? null, // ✅ FIXED: Use 'notes' from cart (not 'note')
                     ]);
 
-                    Log::info('Product attached', [
+                    Log::info('Product attached with notes', [
                         'order_id' => $order->id,
                         'product_id' => $productId,
-                        'quantity' => $item['quantity'],
-                        'subtotal' => $item['subtotal']
+                        'quantity' => $item['quantity'] ?? 1,
+                        'subtotal' => $item['subtotal'] ?? 0,
+                        'note' => $item['notes'] ?? null
                     ]);
                 }
 
-                // ✅ Log successful transaction
                 Log::info('Order transaction completed successfully', [
                     'order_id' => $order->id,
                     'table_id' => $table->id,
@@ -288,29 +284,25 @@ class CartController extends Controller
                 ]);
             });
 
-            // ✅ Step 7: Clear cart dan selected_table dari session
+            // Clear cart and selected_table from session
             session()->forget(['cart', 'selected_table']);
 
             Log::info('Session cleared after checkout', [
                 'order_id' => $orderId
             ]);
 
-            // ✅ Step 8: Redirect ke waiter.tables
             return redirect()->route('waiter.tables')
                 ->with('success', 'Order placed successfully! Table remains occupied until payment.');
 
         } catch (\Exception $e) {
-            // ✅ Log error for debugging
             Log::error('Checkout failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'table_id' => $selectedTable['id'] ?? null,
                 'cart_items' => count($cart),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
             ]);
 
-            return back()->with('error', 'Failed to create order: ' . $e->getMessage());
+            return back()->with('error', 'Failed to place order. Please try again.');
         }
     }
 }

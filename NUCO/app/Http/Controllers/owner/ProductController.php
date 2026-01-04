@@ -31,7 +31,7 @@ class ProductController extends Controller
         }
 
         // Order alphabetically by name
-        $products = $query->orderBy('name', 'asc')->paginate(30);
+        $products = $query->orderBy('name', 'asc')->paginate(20); // ✅ CHANGED to 20
         
         $availableCount = Product::where('is_available', true)->count();
         $totalProductsCount = Product::count();

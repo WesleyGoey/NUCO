@@ -12,7 +12,7 @@ class TableController extends Controller
 {
     public function index(): View
     {
-        $tables = RestaurantTable::orderBy('id','asc')->paginate(25);
+        $tables = RestaurantTable::orderBy('id','asc')->paginate(20); // ✅ CHANGED to 20
         
         // Count available tables
         $availableCount = RestaurantTable::where('status', 'available')->count();

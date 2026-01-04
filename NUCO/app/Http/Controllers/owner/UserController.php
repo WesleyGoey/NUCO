@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $users = User::orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
             ->orderBy('id', 'asc')
-            ->paginate(25);
+            ->paginate(20);
         
         $activeCount = User::where('status', 'active')->count();
         return view('owner.users.index', compact('users', 'activeCount'));

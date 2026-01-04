@@ -15,9 +15,8 @@ class DiscountController extends Controller
 {
     public function index(): View
     {
-        $discounts = Discount::with('periods')->orderBy('id','asc')->paginate(25);
+        $discounts = Discount::with('periods')->orderBy('id','asc')->paginate(20); // ✅ CHANGED to 20
         
-        // Count active discounts
         $today = now()->toDateString();
         $activeCount = Discount::whereHas('periods', function($q) use ($today) {
             $q->whereDate('start_date', '<=', $today)

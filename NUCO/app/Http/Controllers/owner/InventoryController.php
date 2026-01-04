@@ -25,20 +25,19 @@ class InventoryController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
         
-        // Order by stock status (low stock first), then by name
+        // ✅ FIXED: Order by stock status (Low → Medium → Good), then by ID
         $ingredients = $query->orderByRaw('CASE 
                 WHEN current_stock <= min_stock THEN 1 
                 WHEN current_stock <= min_stock * 1.5 THEN 2 
                 ELSE 3 
             END')
-            ->orderBy('name', 'asc')
-            ->paginate(30);
+            ->orderBy('id', 'asc') // ✅ CHANGED: from name to id
+            ->paginate(20);
         
-        // Categorize stock levels
-        $lowStock = Ingredient::whereColumn('current_stock', '<=', 'min_stock')->count();
+        $lowStock = Ingredient::whereRaw('current_stock <= min_stock')->count();
         $mediumStock = Ingredient::whereRaw('current_stock > min_stock AND current_stock <= min_stock * 1.5')->count();
         $goodStock = Ingredient::whereRaw('current_stock > min_stock * 1.5')->count();
-        
+
         return view('owner.inventory.index', compact('ingredients', 'search', 'lowStock', 'mediumStock', 'goodStock'));
     }
 

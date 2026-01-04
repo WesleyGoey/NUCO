@@ -145,16 +145,22 @@
                                             <ul class="list-unstyled mb-0">
                                                 @foreach($order->products as $product)
                                                     <li class="mb-2 d-flex justify-content-between align-items-start">
-                                                        <div>
+                                                        <div class="flex-grow-1">
                                                             <div class="fw-semibold">{{ $product->name }}</div>
                                                             <div class="small text-muted">
-                                                                x{{ $product->pivot->quantity }}
-                                                                @if(!empty($product->pivot->note))
-                                                                    • Note: {{ $product->pivot->note }}
-                                                                @endif
+                                                                Quantity: {{ $product->pivot->quantity }}x
                                                             </div>
+                                                            {{-- ✅ FIXED: Show notes if exists --}}
+                                                            @if(!empty($product->pivot->note))
+                                                                <div class="small mt-1" style="color:#A4823B; background:#FFF9E6; padding:4px 8px; border-radius:6px; display:inline-block;">
+                                                                    <i class="bi bi-chat-left-text me-1"></i>
+                                                                    <strong>Note:</strong> {{ $product->pivot->note }}
+                                                                </div>
+                                                            @endif
                                                         </div>
-                                                        <div class="text-nowrap">Rp {{ number_format($product->pivot->subtotal,0,',','.') }}</div>
+                                                        <div class="text-nowrap ms-3">
+                                                            Rp {{ number_format($product->pivot->subtotal, 0, ',', '.') }}
+                                                        </div>
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -186,9 +192,44 @@
         </div>
     </div>
 
-    @if($orders->hasPages())
+    {{-- ✅ CUSTOM INLINE PAGINATION --}}
+    @if ($orders->lastPage() > 1)
         <div class="d-flex justify-content-center mt-4">
-            {{ $orders->links() }}
+            <nav>
+                <ul class="pagination" style="gap:0.7rem; margin:0; padding:0; list-style:none; display:flex;">
+                    @if ($orders->onFirstPage())
+                        <li class="page-item disabled">
+                            <span class="page-link" style="color:#A4823B; background:#F5F0E5; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:600; cursor:not-allowed; display:inline-block;">&laquo;</span>
+                        </li>
+                    @else
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $orders->appends(['status' => request('status')])->previousPageUrl() }}" rel="prev" style="color:#A4823B; background:#F5F0E5; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:600; text-decoration:none; display:inline-block;">&laquo;</a>
+                        </li>
+                    @endif
+
+                    @foreach ($orders->links()->elements[0] as $page => $url)
+                        @if ($page == $orders->currentPage())
+                            <li class="page-item active">
+                                <span class="page-link" style="color:#F5F0E5; background:#A4823B; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:700; display:inline-block; box-shadow:0 4px 12px rgba(164,130,59,0.3);">{{ $page }}</span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $orders->appends(['status' => request('status')])->url($page) }}" style="color:#A4823B; background:#F5F0E5; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:600; text-decoration:none; display:inline-block;">{{ $page }}</a>
+                            </li>
+                        @endif
+                    @endforeach
+
+                    @if ($orders->hasMorePages())
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $orders->appends(['status' => request('status')])->nextPageUrl() }}" rel="next" style="color:#A4823B; background:#F5F0E5; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:600; text-decoration:none; display:inline-block;">&raquo;</a>
+                        </li>
+                    @else
+                        <li class="page-item disabled">
+                            <span class="page-link" style="color:#A4823B; background:#F5F0E5; border-radius:18px; border:2px solid #A4823B; padding:8px 16px; font-weight:600; cursor:not-allowed; display:inline-block;">&raquo;</span>
+                        </li>
+                    @endif
+                </ul>
+            </nav>
         </div>
     @endif
 </div>

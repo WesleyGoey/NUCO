@@ -24,33 +24,27 @@ class CashierController extends Controller
         Config::$is3ds = config('midtrans.is_3ds');
     }
 
-    /**
-     * Display all unpaid orders for checkout.
-     */
     public function checkout(Request $request): View
     {
-        // ✅ FIXED: Get orders that don't have ANY payment (pending, success, failed)
+        // Get orders that:
+        // 1. Status = 'sent' (ready for payment)
+        // 2. Don't have any payment record yet
         $orders = Order::with(['user', 'table', 'products', 'discount'])
-            ->whereDoesntHave('payment') // ✅ ADDED: Filter out orders with payment
-            ->whereIn('status', ['ready', 'completed'])
-            ->orderBy('id', 'asc')
+            ->where('status', 'sent')
+            ->whereDoesntHave('payment')
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        // ✅ Get active discounts (current date within period range)
-        $today = now()->toDateString();
-        $activeDiscounts = Discount::with(['periods' => function($q) use ($today) {
-            $q->whereDate('start_date', '<=', $today)
-              ->where(function ($q2) use ($today) {
-                  $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
-              });
-        }])
-        ->whereHas('periods', function($q) use ($today) {
-            $q->whereDate('start_date', '<=', $today)
-              ->where(function ($q2) use ($today) {
-                  $q2->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
+        // Get active discounts
+        $activeDiscounts = Discount::whereHas('periods', function($q) {
+            $today = now()->toDateString();
+            $q->where('start_date', '<=', $today)
+              ->where(function($q2) use ($today) {
+                  $q2->whereNull('end_date')
+                     ->orWhere('end_date', '>=', $today);
               });
         })
-        ->orderBy('name')
+        ->orderBy('name', 'asc')
         ->get();
 
         return view('cashier.checkout', compact('orders', 'activeDiscounts'));
@@ -61,13 +55,10 @@ class CashierController extends Controller
      */
     public function orderHistory(Request $request): View
     {
-        // Get orders that have payments (paid orders)
-        $orders = Order::with(['user', 'table', 'products', 'discount', 'payment.user'])
-            ->whereHas('payment', function($q) {
-                $q->where('status', 'success'); // ✅ ONLY show successful payments
-            })
-            ->orderBy('updated_at', 'desc')
-            ->paginate(20);
+        $orders = Order::with(['user', 'table', 'products', 'discount', 'payment'])
+            ->whereHas('payment')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20); // ✅ CHANGED to 20
 
         return view('cashier.order_history', compact('orders'));
     }

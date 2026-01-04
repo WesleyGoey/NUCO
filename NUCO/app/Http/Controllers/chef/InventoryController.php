@@ -24,13 +24,13 @@ class InventoryController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        // Order by stock status (low stock first), then by name
+        // Order by stock status (low stock first), then by id
         $ingredients = $query->orderByRaw('CASE 
                 WHEN current_stock <= min_stock THEN 1 
                 WHEN current_stock <= min_stock * 1.5 THEN 2 
                 ELSE 3 
             END')
-            ->orderBy('name', 'asc')
+            ->orderBy('id', 'asc') // Changed from name to id
             ->get();
 
         // Categorize ingredients by stock level

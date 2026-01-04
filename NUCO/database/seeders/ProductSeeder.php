@@ -20,7 +20,7 @@ class ProductSeeder extends Seeder
         }
 
         // Buat 10 produk dengan gambar placeholder
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 20; $i++) {
             Product::create([
                 'name' => ucfirst($faker->words(2, true)),
                 'category_id' => $categories->random()->id,

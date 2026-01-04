@@ -29,11 +29,7 @@ class DiscountController extends Controller
               });
         })
         ->orderBy('name', 'asc')
-        ->get()
-        ->map(function ($d) {
-            $d->is_active = $d->periods->isNotEmpty();
-            return $d;
-        });
+        ->paginate(20); // ✅ CHANGED to 20
 
         return view('discounts', compact('discounts'));
     }

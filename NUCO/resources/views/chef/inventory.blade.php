@@ -176,28 +176,5 @@
             </div>
         </div>
     </div>
-
-    {{-- Legend --}}
-    <div class="mt-4">
-        <div class="card shadow-sm border-0" style="border-radius:12px; background:#FAFAFA;">
-            <div class="card-body">
-                <div class="small fw-semibold mb-2" style="color:#4b3028;">Stock Status Legend:</div>
-                <div class="d-flex flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle me-2" style="width:12px; height:12px; background:#C0392B;"></div>
-                        <span class="small text-muted">Low Stock: ≤ Min. Stock</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle me-2" style="width:12px; height:12px; background:#D68910;"></div>
-                        <span class="small text-muted">Medium: ≤ 1.5× Min. Stock</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <div class="rounded-circle me-2" style="width:12px; height:12px; background:#2D7A3B;"></div>
-                        <span class="small text-muted">Good: > 1.5× Min. Stock</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection

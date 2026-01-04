@@ -10,18 +10,14 @@ class PaymentController extends Controller
 {
     public function index(): View
     {
+        $payments = Payment::with(['order.user', 'order.table'])
+            ->orderBy('id', 'asc')
+            ->paginate(20);
+
+        // ✅ FIXED: Use 'status' instead of 'payment_status'
         $totalRevenue = Payment::where('status', 'success')->sum('amount');
-        $totalTransactions = Payment::where('status', 'success')->count();
+        $successfulTransactions = Payment::where('status', 'success')->count();
 
-        // Transaction log (newest first)
-        $payments = Payment::with(['order', 'user'])
-            ->orderBy('payment_time', 'desc')
-            ->paginate(30);
-
-        return view('owner.payments.index', compact(
-            'totalRevenue',
-            'totalTransactions',
-            'payments'
-        ));
+        return view('owner.payments.index', compact('payments', 'totalRevenue', 'successfulTransactions'));
     }
 }

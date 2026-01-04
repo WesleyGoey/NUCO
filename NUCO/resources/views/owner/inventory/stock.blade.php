@@ -1,6 +1,6 @@
 @extends('layouts.mainlayout')
 
-@section('title', 'Update Stock')
+@section('title', 'Stock Update')
 
 @section('content')
 <div class="container-xl py-4">
@@ -28,9 +28,10 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold" style="color:#4b3028;">Stock Update Type</label>
                                 <div class="d-grid gap-2">
-                                    <div class="form-check p-3" style="background:#E6F9EE; border-radius:10px; cursor:pointer;">
-                                        <input class="form-check-input" type="radio" name="type" id="purchase" value="purchase" required checked>
-                                        <label class="form-check-label w-100" for="purchase" style="cursor:pointer;">
+                                    {{-- ✅ FIXED: Stock In - Vertical center with flexbox --}}
+                                    <div class="form-check p-3 d-flex align-items-center" style="background:#E6F9EE; border-radius:10px; cursor:pointer;">
+                                        <input class="form-check-input me-3" type="radio" name="type" id="purchase" value="purchase" required checked style="flex-shrink:0; margin-top:0;">
+                                        <label class="form-check-label w-100 m-0" for="purchase" style="cursor:pointer;">
                                             <div class="d-flex align-items-center">
                                                 <i class="bi bi-plus-circle fs-4 me-3" style="color:#2D7A3B;"></i>
                                                 <div>
@@ -41,9 +42,10 @@
                                         </label>
                                     </div>
 
-                                    <div class="form-check p-3" style="background:#FFECEC; border-radius:10px; cursor:pointer;">
-                                        <input class="form-check-input" type="radio" name="type" id="waste" value="waste" required>
-                                        <label class="form-check-label w-100" for="waste" style="cursor:pointer;">
+                                    {{-- ✅ FIXED: Stock Out - Vertical center with flexbox --}}
+                                    <div class="form-check p-3 d-flex align-items-center" style="background:#FFECEC; border-radius:10px; cursor:pointer;">
+                                        <input class="form-check-input me-3" type="radio" name="type" id="waste" value="waste" required style="flex-shrink:0; margin-top:0;">
+                                        <label class="form-check-label w-100 m-0" for="waste" style="cursor:pointer;">
                                             <div class="d-flex align-items-center">
                                                 <i class="bi bi-dash-circle fs-4 me-3" style="color:#C0392B;"></i>
                                                 <div>
@@ -62,20 +64,18 @@
                             <div class="col-12">
                                 <label for="amount" class="form-label fw-bold" style="color:#4b3028;">Amount ({{ $ingredient->unit }})</label>
                                 <input id="amount" name="amount" type="number" step="0.01" class="form-control" required
-                                       value="{{ old('amount') }}" min="0.01"
-                                       placeholder="Enter amount to add or remove"
-                                       style="border-radius:10px;padding:10px;">
+                                       value="{{ old('amount') }}"
+                                       style="border-radius:10px;padding:10px;" placeholder="Enter amount">
                                 @error('amount')
                                     <div class="text-danger mt-1 small">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-12">
-                                <label for="note" class="form-label fw-bold" style="color:#4b3028;">Note (Optional)</label>
-                                <textarea id="note" name="note" rows="3" class="form-control"
-                                          placeholder="Add a note about this stock update..."
-                                          style="border-radius:10px;padding:10px;">{{ old('note') }}</textarea>
-                                @error('note')
+                                <label for="notes" class="form-label fw-bold" style="color:#4b3028;">Notes (Optional)</label>
+                                <textarea id="notes" name="notes" class="form-control" rows="3"
+                                          style="border-radius:10px;padding:10px;" placeholder="Add notes about this stock update">{{ old('notes') }}</textarea>
+                                @error('notes')
                                     <div class="text-danger mt-1 small">{{ $message }}</div>
                                 @enderror
                             </div>

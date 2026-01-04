@@ -10,9 +10,8 @@ class ReviewController extends Controller
 {
     public function index(): View
     {
-        $reviews = Review::with('user')->orderBy('id','asc')->paginate(25);
+        $reviews = Review::with('user')->orderBy('id','asc')->paginate(20);
         
-        // Calculate statistics
         $avgRating = Review::avg('rating') ?? 0;
         $rating5 = Review::where('rating', 5)->count();
         $rating4 = Review::where('rating', 4)->count();
