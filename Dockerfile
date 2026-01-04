@@ -67,9 +67,13 @@ RUN chmod -R 755 storage bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start the Laravel development server using Railway's PORT variable
-CMD echo "=== Starting Laravel Server ===" && \
+# ✅ START: Run migrations, create storage link, then start server
+CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "APP_KEY: [CONFIGURED]" && \
     echo "DB_HOST: ${DB_HOST:-not-set}" && \
+    echo "=== Running Migrations ===" && \
+    php artisan migrate --force && \
+    echo "=== Creating Storage Link ===" && \
+    php artisan storage:link && \
+    echo "=== Starting Laravel Server ===" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
