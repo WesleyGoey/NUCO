@@ -27,40 +27,36 @@ RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/php.ini-production &&
     echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini-production && \
     cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 
-# Get latest Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory to NUCO subdirectory
+# Set working directory
 WORKDIR /app/NUCO
 
-# Copy composer files from NUCO directory
+# Copy composer files
 COPY NUCO/composer.json NUCO/composer.lock ./
 
-# Install dependencies (production only) - skip scripts
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
-# Copy package files from NUCO directory
+# Copy package files
 COPY NUCO/package.json NUCO/package-lock.json ./
 
-# Install npm dependencies
+# Install Node dependencies
 RUN npm ci
 
-# Copy all NUCO application files
+# Copy application
 COPY NUCO/ .
 
-# Build assets with Vite
+# Build frontend assets
 RUN npm run build && \
     echo "=== Vite Build Complete ===" && \
     ls -la public/build/ && \
     cat public/build/manifest.json
 
-# Run composer scripts after files are copied
+# Optimize Laravel
 RUN composer dump-autoload --optimize
-
-# Run Laravel package discovery
 RUN php artisan package:discover --ansi
-
-# Clear Laravel caches
 RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
@@ -74,5 +70,6 @@ EXPOSE 8000
 # Start the Laravel development server using Railway's PORT variable
 CMD echo "=== Starting Laravel Server ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "APP_KEY: ${APP_KEY:0:20}..." && \
+    echo "APP_KEY: [CONFIGURED]" && \
+    echo "DB_HOST: ${DB_HOST:-not-set}" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
