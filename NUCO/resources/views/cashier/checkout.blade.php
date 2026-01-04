@@ -38,58 +38,102 @@
         </div>
     @endif
 
-    <div class="row g-3">
+    {{-- ✅ UPDATED: Use CSS Grid for equal height cards --}}
+    <div class="checkout-grid">
         @forelse($orders as $order)
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0" style="border-radius:14px; overflow:hidden;">
-                    <div class="card-body p-3">
-                        {{-- Header --}}
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 fw-bold" style="color:#A4823B;">Order #{{ $order->id }}</h5>
-                                <div class="small text-muted">{{ $order->created_at->format('d M Y, H:i') }}</div>
+            <div class="checkout-card-wrapper">
+                <div class="card shadow-sm border-0" style="border-radius:14px; overflow:hidden; height:100%; display:flex; flex-direction:column;">
+                    {{-- Card Header --}}
+                    <div class="p-3" style="background:linear-gradient(135deg, #A4823B 0%, #8B6F32 100%); flex-shrink:0;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="text-white">
+                                <h5 class="mb-1 fw-bold">Order #{{ $order->id }}</h5>
+                                <div class="small opacity-75">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ $order->created_at->format('d M Y, H:i') }}
+                                </div>
                             </div>
                             @if($order->table)
-                                <span class="badge" style="background:#F5F0E5; color:#A4823B; padding:6px 12px; border-radius:8px; font-weight:700;">
+                                <span class="badge" style="background:#F5F0E5; color:#A4823B; padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.9rem;">
+                                    <i class="bi bi-table me-1"></i>
                                     Table {{ $order->table->table_number }}
                                 </span>
                             @endif
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1">Customer</div>
-                            <div class="fw-semibold">{{ $order->order_name ?? 'No Name' }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1">Items</div>
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach($order->products as $product)
-                                    <span class="badge bg-secondary">{{ $product->name }} ({{ $product->pivot->quantity }}x)</span>
-                                @endforeach
+                    {{-- Customer Info --}}
+                    <div class="px-3 pt-3 pb-2" style="flex-shrink:0;">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div style="width:40px; height:40px; background:#F5F0E5; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-person-fill" style="color:#A4823B; font-size:1.2rem;"></i>
+                            </div>
+                            <div>
+                                <div class="small text-muted">Customer</div>
+                                <div class="fw-bold">{{ $order->order_name ?? 'No Name' }}</div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted">Total</span>
-                            <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
-                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                            </span>
-                        </div>
+                    {{-- ✅ Product List (SCROLLABLE if too many items) --}}
+                    <div class="px-3 pb-3" style="flex:1; overflow-y:auto; min-height:0;">
+                        <div class="small text-muted fw-semibold mb-2">Order Items</div>
+                        <div class="list-group list-group-flush">
+                            @foreach($order->products as $product)
+                                <div class="list-group-item border-0 px-0 py-2" style="background:transparent;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        {{-- Product Name & Quantity --}}
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold" style="font-size:0.95rem;">
+                                                {{ $product->name }}
+                                            </div>
+                                            <div class="small text-muted">
+                                                {{ $product->pivot->quantity }}x @ Rp {{ number_format($product->price, 0, ',', '.') }}
+                                            </div>
+                                        </div>
 
-                        <div class="d-grid">
-                            <button type="button" class="btn w-100" 
-                                    style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#paymentModal{{ $order->id }}">
-                                <i class="bi bi-credit-card me-2"></i>
-                                Process Payment
-                            </button>
+                                        {{-- Subtotal --}}
+                                        <div class="text-end">
+                                            <div class="fw-bold" style="color:#A4823B;">
+                                                Rp {{ number_format($product->pivot->subtotal, 0, ',', '.') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
+                    </div>
+
+                    {{-- Total Summary --}}
+                    <div class="px-3 pb-3" style="flex-shrink:0;">
+                        <div class="p-3" style="background:#F5F0E5; border-radius:10px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Subtotal</span>
+                                <span class="fw-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold" style="font-size:1.1rem;">Total</span>
+                                <span class="fw-bold" style="color:#A4823B; font-size:1.3rem;">
+                                    Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Payment Button --}}
+                    <div class="p-3" style="background:#FAFAFA; border-top:1px solid #E9E6E2; flex-shrink:0;">
+                        <button type="button" class="btn w-100" 
+                                style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700; box-shadow:0 4px 12px rgba(164,130,59,0.25);"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#paymentModal{{ $order->id }}">
+                            <i class="bi bi-credit-card me-2"></i>
+                            Process Payment
+                        </button>
                     </div>
                 </div>
             </div>
 
+            {{-- Payment Modal --}}
             <div class="modal fade" id="paymentModal{{ $order->id }}" tabindex="-1" aria-labelledby="paymentModalLabel{{ $order->id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content" style="border-radius:14px; border:none;">
@@ -172,6 +216,66 @@
     </div>
 </div>
 
+{{-- ✅ CSS for Equal Height Cards --}}
+<style>
+/* Grid layout for equal height cards */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Ensure all cards have same height */
+.checkout-card-wrapper {
+    display: flex;
+}
+
+.checkout-card-wrapper > .card {
+    flex: 1;
+    min-height: 550px; /* ✅ Fixed minimum height for consistency */
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .checkout-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .checkout-card-wrapper > .card {
+        min-height: 520px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-card-wrapper > .card {
+        min-height: 480px;
+    }
+}
+
+/* Scrollbar styling for product list */
+.checkout-card-wrapper .card > div:nth-child(3) {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(164, 130, 59, 0.3) transparent;
+}
+
+.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar {
+    width: 6px;
+}
+
+.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar-thumb {
+    background-color: rgba(164, 130, 59, 0.3);
+    border-radius: 10px;
+}
+</style>
+
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -228,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.disabled = true;
             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-            // ✅ Step 1: Get Snap Token dari backend
             fetch('{{ route("cashier.payment.process") }}', {
                 method: 'POST',
                 headers: {
@@ -243,12 +346,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // ✅ Step 2: Open Midtrans Snap popup
                     snap.pay(data.snap_token, {
                         onSuccess: function(result) {
                             console.log('Payment success:', result);
-
-                            // ✅ Step 3: Store payment record ke database
+                            
+                            // ✅ FIX: Send correct data to storePayment
                             fetch('{{ route("cashier.payment.store") }}', {
                                 method: 'POST',
                                 headers: {
@@ -260,44 +362,46 @@ document.addEventListener('DOMContentLoaded', function() {
                                     transaction_id: data.transaction_id,
                                     amount: data.final_amount,
                                     cashier_id: data.cashier_id,
-                                    snap_token: data.snap_token
+                                    snap_token: data.snap_token,
+                                    discount_id: discountId || null
                                 })
                             })
                             .then(response => response.json())
-                            .then(paymentData => {
-                                if (paymentData.success) {
-                                    alert('Payment success!');
+                            .then(storeData => {
+                                if (storeData.success) {
+                                    alert('Payment successful!');
                                     window.location.reload();
                                 } else {
-                                    alert('Payment recorded but failed to save: ' + paymentData.message);
+                                    console.error('Store payment failed:', storeData);
+                                    alert('Payment recorded but there was an issue: ' + (storeData.message || 'Unknown error'));
                                     window.location.reload();
                                 }
                             })
                             .catch(error => {
                                 console.error('Store payment error:', error);
-                                alert('Payment success but failed to record!');
-                                window.location.reload();
+                                alert('Payment success but failed to record! Please contact admin.');
+                                // Redirect to order history for manual verification
+                                setTimeout(() => {
+                                    window.location.href = '{{ route("cashier.order.history") }}';
+                                }, 2000);
                             });
                         },
                         onPending: function(result) {
                             console.log('Payment pending:', result);
-                            // ✅ JANGAN STORE PAYMENT, hanya log
                             alert('Payment pending. Please complete payment.');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         },
                         onError: function(result) {
                             console.log('Payment error:', result);
-                            alert('Payment failed!');
-                            window.location.reload();
+                            alert('Payment failed: ' + (result.status_message || 'Unknown error'));
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         },
                         onClose: function() {
                             console.log('Popup closed without payment');
-                            // ✅ JANGAN STORE PAYMENT, user cancel
-                            // Re-enable button
-                            const btn = document.querySelector(`[data-order-id="${orderId}"]`);
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
-                            }
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         }
                     });
                 } else {
@@ -308,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred');
+                alert('An error occurred while processing payment');
                 this.disabled = false;
                 this.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
             });

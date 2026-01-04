@@ -34,10 +34,10 @@
                                      style="width:100%; height:100%; object-fit:cover; display:block;">
                             </div>
                         @else
-                            {{-- ✅ FINAL: 16px icon (much smaller!) --}}
-                            <div class="ratio ratio-4x3 d-flex align-items-center justify-content-center" 
-                                 style="background:#F5F0E5;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A4823B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            {{-- ✅ FIXED: Hapus .ratio class, gunakan fixed height --}}
+                            <div class="d-flex align-items-center justify-content-center" 
+                                 style="background:#F5F0E5; height:200px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#A4823B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
                                     <circle cx="7" cy="7" r="1.5" fill="#A4823B"/>
                                 </svg>
@@ -102,7 +102,7 @@
         @endforelse
     </div>
 
-    {{-- ✅ CUSTOM INLINE PAGINATION --}}
+    {{-- Pagination --}}
     @if ($discounts->lastPage() > 1)
         <div class="d-flex justify-content-center mt-4">
             <nav>

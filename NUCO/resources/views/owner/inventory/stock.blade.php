@@ -28,7 +28,7 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold" style="color:#4b3028;">Stock Update Type</label>
                                 <div class="d-grid gap-2">
-                                    {{-- ✅ FIXED: Stock In - Vertical center with flexbox --}}
+                                    {{-- Stock In --}}
                                     <div class="form-check p-3 d-flex align-items-center" style="background:#E6F9EE; border-radius:10px; cursor:pointer;">
                                         <input class="form-check-input me-3" type="radio" name="type" id="purchase" value="purchase" required checked style="flex-shrink:0; margin-top:0;">
                                         <label class="form-check-label w-100 m-0" for="purchase" style="cursor:pointer;">
@@ -42,7 +42,7 @@
                                         </label>
                                     </div>
 
-                                    {{-- ✅ FIXED: Stock Out - Vertical center with flexbox --}}
+                                    {{-- Stock Out --}}
                                     <div class="form-check p-3 d-flex align-items-center" style="background:#FFECEC; border-radius:10px; cursor:pointer;">
                                         <input class="form-check-input me-3" type="radio" name="type" id="waste" value="waste" required style="flex-shrink:0; margin-top:0;">
                                         <label class="form-check-label w-100 m-0" for="waste" style="cursor:pointer;">
@@ -71,14 +71,6 @@
                                 @enderror
                             </div>
 
-                            <div class="col-12">
-                                <label for="notes" class="form-label fw-bold" style="color:#4b3028;">Notes (Optional)</label>
-                                <textarea id="notes" name="notes" class="form-control" rows="3"
-                                          style="border-radius:10px;padding:10px;" placeholder="Add notes about this stock update">{{ old('notes') }}</textarea>
-                                @error('notes')
-                                    <div class="text-danger mt-1 small">{{ $message }}</div>
-                                @enderror
-                            </div>
                         </div>
 
                         <div class="d-flex justify-content-center gap-3 mt-4">
