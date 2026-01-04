@@ -75,4 +75,4 @@ CMD echo "=== Starting Deployment ===" && \
     echo "=== Creating Storage Link ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
-    exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
