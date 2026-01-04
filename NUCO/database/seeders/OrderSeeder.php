@@ -31,7 +31,7 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $user = $users->isNotEmpty() ? $users->random() : null;
             $table = $tables->isNotEmpty() ? $tables->random() : null;
             $selected = $products->random(rand(1, 4));
