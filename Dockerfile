@@ -36,8 +36,8 @@ WORKDIR /app/NUCO
 # Copy composer files
 COPY NUCO/composer.json NUCO/composer.lock ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+# ✅ FIX: Install ALL dependencies (including faker)
+RUN composer install --optimize-autoloader --no-interaction --prefer-dist
 
 # Copy package files
 COPY NUCO/package.json NUCO/package-lock.json ./
@@ -67,6 +67,10 @@ RUN chmod -R 755 storage bootstrap/cache
 # Expose port
 EXPOSE 8000
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD php artisan inspire || exit 1
+
 # ✅ FIXED: Migrate fresh untuk Railway deployment
 CMD echo "=== Starting Deployment ===" && \
     echo "PORT: ${PORT:-8000}" && \
@@ -77,3 +81,8 @@ CMD echo "=== Starting Deployment ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+
+# ✅ Verify Faker is installed
+RUN echo "=== Verifying Faker Installation ===" && \
+    php -r "require 'vendor/autoload.php'; echo class_exists('Faker\\Factory') ? 'Faker OK' : 'Faker MISSING';" && \
+    echo ""
