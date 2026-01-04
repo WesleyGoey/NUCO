@@ -25,19 +25,15 @@ require __DIR__ . '/auth.php';
 // Health check route for Railway debugging
 Route::get('/health', function () {
     try {
-        DB::connection()->getPdo();
+        // ✅ UPDATED: Simple health check tanpa DB query
         return response()->json([
-            'status' => 'ok',
-            'database' => 'connected',
-            'app_key' => config('app.key') ? 'set' : 'missing',
-            'env' => config('app.env'),
-        ]);
+            'status' => 'healthy',
+            'timestamp' => now()->toIso8601String(),
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
-            'status' => 'error',
-            'database' => 'failed',
-            'error' => $e->getMessage(),
-            'app_key' => config('app.key') ? 'set' : 'missing',
+            'status' => 'unhealthy',
+            'error' => $e->getMessage()
         ], 500);
     }
 });
