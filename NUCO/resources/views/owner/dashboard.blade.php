@@ -4,6 +4,16 @@
 
 @section('content')
 <div class="container-xl py-4">
+    {{-- ✅ SHOW ERROR MESSAGE IF EXISTS --}}
+    @if(isset($error))
+        <div class="alert alert-danger mb-4" role="alert">
+            <h5 class="alert-heading">⚠️ Dashboard Error</h5>
+            <p class="mb-0">{{ $error }}</p>
+            <hr>
+            <p class="mb-0 small">Check Railway logs for details.</p>
+        </div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="mb-0 fw-bold">Owner Dashboard</h3>
@@ -12,7 +22,7 @@
     </div>
 
     <div class="row g-3">
-        @foreach($cards as $c)
+        @forelse($cards as $c)
             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 @php $href = $c['href'] ?? null; @endphp
                 <a href="{{ $href ?? '#' }}" class="text-decoration-none {{ $href ? '' : 'disabled-link' }}"
@@ -48,7 +58,13 @@
                     </div>
                 </a>
             </div>
-        @endforeach
+        @empty
+            <div class="col-12">
+                <div class="alert alert-info text-center" role="alert">
+                    No data available to display. Please check back later.
+                </div>
+            </div>
+        @endforelse
     </div>
 </div>
 @endsection
