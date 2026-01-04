@@ -20,7 +20,7 @@ class ProductSeeder extends Seeder
             return;
         }
 
-        // Buat 10 produk dengan gambar placeholder
+        // Buat 5 produk per kategori
         foreach ($categories as $category) {
             for ($i = 0; $i < 5; $i++) {
                 Product::create([
@@ -28,8 +28,8 @@ class ProductSeeder extends Seeder
                     'category_id' => $category->id,
                     'price' => $faker->numberBetween(10000, 100000),
                     'description' => $faker->sentence(),
-                    'image' => 'default.jpg',
-                    'stock' => $faker->numberBetween(10, 100),
+                    'image_path' => 'default.jpg', // ✅ FIXED: Gunakan 'image_path'
+                    'is_available' => $faker->boolean(80), // ✅ ADDED: 80% chance available
                 ]);
             }
         }
