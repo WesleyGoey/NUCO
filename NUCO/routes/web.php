@@ -18,9 +18,29 @@ use App\Http\Controllers\Owner\PaymentController as OwnerPaymentController;
 use App\Http\Controllers\Owner\ReviewController as OwnerReviewController;
 use App\Http\Controllers\Owner\TableController as OwnerTableController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB; // ⭐ ADD THIS LINE
+use Illuminate\Support\Facades\DB;
 
 require __DIR__ . '/auth.php';
+
+// Health check route for Railway debugging
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        return response()->json([
+            'status' => 'ok',
+            'database' => 'connected',
+            'app_key' => config('app.key') ? 'set' : 'missing',
+            'env' => config('app.env'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'database' => 'failed',
+            'error' => $e->getMessage(),
+            'app_key' => config('app.key') ? 'set' : 'missing',
+        ], 500);
+    }
+});
 
 Route::get('/', [MenuController::class, 'index'])->name('home');
 Route::get('/products', [MenuController::class, 'index'])->name('menu');
