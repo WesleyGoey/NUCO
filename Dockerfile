@@ -71,5 +71,5 @@ RUN chmod -R 755 storage bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Railway will use Procfile to start the server
-# No CMD needed - Railway handles this via Procfile
+# Start the Laravel development server using Railway's PORT variable
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
