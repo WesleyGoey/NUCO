@@ -76,6 +76,7 @@ CMD echo "=== Starting Deployment ===" && \
     php artisan storage:link && \
     echo "=== Starting Laravel Server ===" && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000} & \
-    sleep 5 && \
+    echo "Waiting for server startup (20s)..." && \
+    sleep 20 && \
     echo "✅ Server ready for traffic" && \
     wait
