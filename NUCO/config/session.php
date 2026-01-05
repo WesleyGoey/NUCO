@@ -169,7 +169,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
+    'secure' => env('SESSION_SECURE_COOKIE'),
 
     /*
     |--------------------------------------------------------------------------
@@ -199,7 +199,6 @@ return [
     |
     */
 
-    // gunakan 'lax' agar POST dari navigasi normal tetap bekerja dan mengurangi 419
     'same_site' => env('SESSION_SAME_SITE', 'lax'),
 
     /*
