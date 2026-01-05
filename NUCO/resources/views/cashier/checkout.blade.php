@@ -38,6 +38,7 @@
         </div>
     @endif
 
+    {{-- ✅ Checkout Grid atau Empty State --}}
     <div class="checkout-grid">
         @forelse($orders as $order)
             <div class="checkout-card-wrapper">
@@ -203,9 +204,10 @@
             </div>
 
         @empty
+            {{-- ✅ EMPTY STATE: card putih lebih tinggi/full --}}
             <div class="col-12">
-                <div class="card shadow-sm border-0" style="border-radius:14px;">
-                    <div class="card-body text-center py-5">
+                <div class="card shadow-sm border-0" style="border-radius:14px; min-height:400px;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center text-center" style="min-height:400px;">
                         <i class="bi bi-inbox" style="font-size:3rem; color:#D0D0D0;"></i>
                         <div class="mt-3 text-muted">No unpaid orders at the moment.</div>
                     </div>
@@ -215,61 +217,7 @@
     </div>
 </div>
 
-<style>
-.checkout-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-}
-
-.checkout-card-wrapper {
-    display: flex;
-}
-
-.checkout-card-wrapper > .card {
-    flex: 1;
-    min-height: 550px;
-}
-
-@media (max-width: 991.98px) {
-    .checkout-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-    
-    .checkout-card-wrapper > .card {
-        min-height: 520px;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .checkout-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .checkout-card-wrapper > .card {
-        min-height: 480px;
-    }
-}
-
-.checkout-card-wrapper .card > div:nth-child(3) {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(164, 130, 59, 0.3) transparent;
-}
-
-.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar {
-    width: 6px;
-}
-
-.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.checkout-card-wrapper .card > div:nth-child(3)::-webkit-scrollbar-thumb {
-    background-color: rgba(164, 130, 59, 0.3);
-    border-radius: 10px;
-}
-</style>
-
+{{-- Midtrans Snap JS --}}
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
