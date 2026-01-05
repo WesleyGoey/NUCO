@@ -26,24 +26,21 @@ class CashierController extends Controller
 
     public function checkout(Request $request): View
     {
-        $orders = Order::with(['user', 'table', 'products', 'discount'])
-            ->where('status', 'sent')
-            ->whereDoesntHave('payment')
-            ->orderBy('created_at', 'asc')
-            ->get();
+        try {
+            $orders = Order::with(['user', 'table', 'products', 'discount'])
+                ->where('status', 'sent')
+                ->whereDoesntHave('payment')
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-        $activeDiscounts = Discount::whereHas('periods', function($q) {
-            $today = now()->toDateString();
-            $q->where('start_date', '<=', $today)
-              ->where(function($q2) use ($today) {
-                  $q2->whereNull('end_date')
-                     ->orWhere('end_date', '>=', $today);
-              });
-        })
-        ->orderBy('name', 'asc')
-        ->get();
-
-        return view('cashier.checkout', compact('orders', 'activeDiscounts'));
+            return view('cashier.checkout', compact('orders'));
+        } catch (\Exception $e) {
+            Log::error('Cashier checkout error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return view('cashier.checkout', [
+                'orders' => collect(),
+                'error' => 'Failed to load checkout. Check logs.'
+            ]);
+        }
     }
 
     public function orderHistory(Request $request): View
