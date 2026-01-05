@@ -22,7 +22,7 @@ class ProductSeeder extends Seeder
 
         // Buat 5 produk per kategori
         foreach ($categories as $category) {
-            for ($i = 0; $i < 3; $i++) {
+            for ($i = 0; $i < 4; $i++) {
                 Product::create([
                     'name' => $faker->words(3, true),
                     'category_id' => $category->id,
