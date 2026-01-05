@@ -24,7 +24,7 @@
                    style="{{ $allActive ? 'background:#A4823B;color:#F5F0E5;border:none;font-weight:700;' : 'background:#ffffff;color:#6b6b6b;border:1px solid rgba(164,130,59,0.12);' }}">
                     All
                     <span class="ms-2" style="background:#F5F0E5;color:#A4823B;border-radius:10px;padding:4px 8px;font-size:0.85rem;">
-                        {{ $categories->sum(fn($c) => $c->products->count()) }}
+                        {{ $totalProductsCount ?? ($categories->sum(fn($c) => $c->products->count())) }}
                     </span>
                 </a>
 
