@@ -39,7 +39,7 @@ class DashboardController extends Controller
                 ['title'=>'Tables','route'=>'owner.tables.index','key'=>'tables','icon'=>'bi-table','desc'=>'Manage dining layout'],
                 ['title'=>'Discounts','route'=>'owner.discounts.index','key'=>'discounts','icon'=>'bi-tag','desc'=>'Promos & periods'],
                 ['title'=>'Orders','route'=>'orders','key'=>'orders','icon'=>'bi-basket','desc'=>'Realtime order monitor'],
-                ['title'=>'Payments','route'=>'owner.payments.index','key'=>'payments','icon'=>'bi-credit-card','desc'=>'Payment methods & records'],
+                ['title'=>'Payments','route'=>'owner.payments.index','key'=>'payments','icon'=>'bi-credit-card','desc'=>'Revenue & transaction logs'],
                 ['title'=>'Reviews','route'=>'owner.reviews.index','key'=>'reviews','icon'=>'bi-chat-left-text','desc'=>'Customer feedback'],
             ];
 
