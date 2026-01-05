@@ -88,6 +88,11 @@ class MenuController extends Controller
         // ✅ FIX: Variable untuk filter buttons
         $allCategoriesForButtons = Category::orderBy('id')->get();
 
-        return view('menu', compact('categories', 'search', 'selectedCategory', 'allCategoriesForButtons'));
+        // Total produk (global) — dipakai oleh tombol "All"
+        $totalProductsCount = Category::withCount(['products' => function($q){
+            $q->where('is_available', 1);
+        }])->get()->sum('products_count');
+
+        return view('menu', compact('categories', 'search', 'selectedCategory', 'allCategoriesForButtons', 'totalProductsCount'));
     }
 }

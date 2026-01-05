@@ -7,20 +7,38 @@ use App\Http\Controllers\waiter\TableController;
 use App\Http\Controllers\waiter\CartController;
 use App\Http\Controllers\reviewer\ReviewController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Cashier\CashierController;
-use App\Http\Controllers\Chef\InventoryController;
-use App\Http\Controllers\Owner\DashboardController;
-use App\Http\Controllers\Owner\UserController as OwnerUserController;
-use App\Http\Controllers\Owner\ProductController as OwnerProductController;
-use App\Http\Controllers\Owner\InventoryController as OwnerInventoryController;
-use App\Http\Controllers\Owner\DiscountController as OwnerDiscountController;
-use App\Http\Controllers\Owner\PaymentController as OwnerPaymentController;
-use App\Http\Controllers\Owner\ReviewController as OwnerReviewController;
-use App\Http\Controllers\Owner\TableController as OwnerTableController;
+use App\Http\Controllers\cashier\CashierController;
+use App\Http\Controllers\chef\InventoryController;
+use App\Http\Controllers\owner\DashboardController;
+use App\Http\Controllers\owner\UserController as OwnerUserController;
+use App\Http\Controllers\owner\ProductController as OwnerProductController;
+use App\Http\Controllers\owner\InventoryController as OwnerInventoryController;
+use App\Http\Controllers\owner\DiscountController as OwnerDiscountController;
+use App\Http\Controllers\owner\PaymentController as OwnerPaymentController;
+use App\Http\Controllers\owner\ReviewController as OwnerReviewController;
+use App\Http\Controllers\owner\TableController as OwnerTableController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB; // ⭐ ADD THIS LINE
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 require __DIR__ . '/auth.php';
+
+// Health check route for Railway debugging
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        return response()->json([
+            'status' => 'ok',
+            'timestamp' => now()->toIso8601String(),
+            'database' => 'connected'
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Database connection failed'
+        ], 503);
+    }
+});
 
 Route::get('/', [MenuController::class, 'index'])->name('home');
 Route::get('/products', [MenuController::class, 'index'])->name('menu');

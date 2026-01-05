@@ -38,48 +38,104 @@
         </div>
     @endif
 
-    <div class="row g-3">
-        @forelse($orders as $order)
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0" style="border-radius:14px; overflow:hidden;">
-                    <div class="card-body p-3">
-                        {{-- Header --}}
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="mb-1 fw-bold" style="color:#A4823B;">Order #{{ $order->id }}</h5>
-                                <div class="small text-muted">{{ $order->created_at->format('d M Y, H:i') }}</div>
+    @if($orders->isEmpty())
+        {{-- ✅ EMPTY STATE: card putih full tinggi --}}
+        <div class="card shadow-sm border-0" style="border-radius:14px; min-height:400px;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center" style="min-height:400px;">
+                <i class="bi bi-inbox" style="font-size:3rem; color:#D0D0D0;"></i>
+                <div class="mt-3 text-muted">No unpaid orders at the moment.</div>
+            </div>
+        </div>
+    @else
+        {{-- ✅ GRID CARDS: tampilkan per-order dalam grid responsif --}}
+        <div class="row g-4">
+            @foreach($orders as $order)
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 h-100" style="border-radius:14px; overflow:hidden; display:flex; flex-direction:column;">
+                        {{-- Card Header --}}
+                        <div class="p-3" style="background:linear-gradient(135deg, #A4823B 0%, #8B6F32 100%); flex-shrink:0;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="text-white">
+                                    <h5 class="mb-1 fw-bold">Order #{{ $order->id }}</h5>
+                                    <div class="small opacity-75">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ $order->created_at->format('d M Y, H:i') }}
+                                    </div>
+                                </div>
+                                @if($order->table)
+                                    <span class="badge" style="background:#F5F0E5; color:#A4823B; padding:8px 14px; border-radius:8px; font-weight:700; font-size:0.9rem;">
+                                        <i class="bi bi-table me-1"></i>
+                                        Table {{ $order->table->table_number }}
+                                    </span>
+                                @endif
                             </div>
-                            @if($order->table)
-                                <span class="badge" style="background:#F5F0E5; color:#A4823B; padding:6px 12px; border-radius:8px; font-weight:700;">
-                                    Table {{ $order->table->table_number }}
-                                </span>
-                            @endif
                         </div>
 
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1">Customer</div>
-                            <div class="fw-semibold">{{ $order->order_name ?? 'No Name' }}</div>
+                        {{-- Customer Info --}}
+                        <div class="px-3 pt-3 pb-2" style="flex-shrink:0;">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div style="width:40px; height:40px; background:#F5F0E5; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                    <i class="bi bi-person-fill" style="color:#A4823B; font-size:1.2rem;"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Customer</div>
+                                    <div class="fw-bold">{{ $order->order_name ?? 'No Name' }}</div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <div class="small text-muted mb-1">Items</div>
-                            <div class="d-flex flex-wrap gap-1">
+                        {{-- Product List (SCROLLABLE if too many items) --}}
+                        <div class="px-3 pb-3" style="flex:1; overflow-y:auto; min-height:0;">
+                            <div class="small text-muted fw-semibold mb-2">Order Items</div>
+                            <div class="list-group list-group-flush">
                                 @foreach($order->products as $product)
-                                    <span class="badge bg-secondary">{{ $product->name }} ({{ $product->pivot->quantity }}x)</span>
+                                    <div class="list-group-item border-0 px-0 py-2" style="background:transparent;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold" style="font-size:0.95rem;">
+                                                    {{ $product->name }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    {{ $product->pivot->quantity }}x @ Rp {{ number_format($product->price, 0, ',', '.') }}
+                                                </div>
+                                                @if(!empty($product->pivot->note))
+                                                    <div class="small mt-1" style="color:#A4823B; background:#FFF9E6; padding:4px 8px; border-radius:6px; display:inline-block;">
+                                                        <i class="bi bi-chat-left-text me-1"></i>
+                                                        {{ $product->pivot->note }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold" style="color:#A4823B;">
+                                                    Rp {{ number_format($product->pivot->subtotal, 0, ',', '.') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="text-muted">Total</span>
-                            <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;">
-                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                            </span>
+                        {{-- Total Summary --}}
+                        <div class="px-3 pb-3" style="flex-shrink:0;">
+                            <div class="p-3" style="background:#F5F0E5; border-radius:10px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small">Subtotal</span>
+                                    <span class="fw-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold" style="font-size:1.1rem;">Total</span>
+                                    <span class="fw-bold" style="color:#A4823B; font-size:1.3rem;">
+                                        Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="d-grid">
+                        {{-- Payment Button --}}
+                        <div class="p-3" style="background:#FAFAFA; border-top:1px solid #E9E6E2; flex-shrink:0;">
                             <button type="button" class="btn w-100" 
-                                    style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;"
+                                    style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700; box-shadow:0 4px 12px rgba(164,130,59,0.25);"
                                     data-bs-toggle="modal" 
                                     data-bs-target="#paymentModal{{ $order->id }}">
                                 <i class="bi bi-credit-card me-2"></i>
@@ -88,90 +144,85 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="modal fade" id="paymentModal{{ $order->id }}" tabindex="-1" aria-labelledby="paymentModalLabel{{ $order->id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content" style="border-radius:14px; border:none;">
-                        <div class="modal-header" style="background:#A4823B; color:#F5F0E5; border-radius:14px 14px 0 0;">
-                            <h5 class="modal-title fw-bold" id="paymentModalLabel{{ $order->id }}">Process Payment</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <div class="small text-muted mb-1">Order #{{ $order->id }}</div>
-                                <div class="fw-bold" style="color:#A4823B; font-size:1.5rem;">
-                                    Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                                </div>
+                {{-- ✅ Payment Modal (per order) --}}
+                <div class="modal fade" id="paymentModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="border-radius:14px; overflow:hidden;">
+                            <div class="modal-header" style="background:#A4823B; color:#F5F0E5; border:none;">
+                                <h5 class="modal-title fw-bold">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Payment - Order #{{ $order->id }}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="discount{{ $order->id }}" class="form-label fw-bold" style="color:#4b3028;">Apply Discount (Optional)</label>
-                                <select name="discount_id" id="discount{{ $order->id }}" class="form-select discount-select" style="border-radius:10px; padding:10px;" data-order-id="{{ $order->id }}" data-order-total="{{ $order->total_price }}">
-                                    <option value="">No Discount</option>
-                                    @foreach($activeDiscounts as $disc)
-                                        <option value="{{ $disc->id }}" 
-                                                data-type="{{ $disc->type }}" 
-                                                data-value="{{ $disc->value }}"
-                                                data-min="{{ $disc->min_order_amount ?? 0 }}">
-                                            {{ $disc->name }} 
-                                            @if($disc->type === 'percent')
-                                                ({{ $disc->value }}%)
-                                            @else
-                                                (Rp {{ number_format($disc->value, 0, ',', '.') }})
-                                            @endif
-                                            @if($disc->min_order_amount)
-                                                - Min: Rp {{ number_format($disc->min_order_amount, 0, ',', '.') }}
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="card" style="background:#F9F9F9; border:1px solid #E9E6E2; border-radius:10px;">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Subtotal</span>
-                                        <span class="fw-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2" id="discount-row-{{ $order->id }}" style="display:none !important;">
-                                        <span class="text-success">Discount</span>
-                                        <span class="text-success fw-semibold" id="discount-amount-{{ $order->id }}">- Rp 0</span>
-                                    </div>
-                                    <hr style="margin:8px 0;">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="fw-bold">Total</span>
-                                        <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;" id="final-total-{{ $order->id }}">
-                                            Rp {{ number_format($order->total_price, 0, ',', '.') }}
-                                        </span>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <div class="fw-bold mb-2">Order Total</div>
+                                    <div class="fw-bold" style="color:#A4823B; font-size:1.5rem;">
+                                        Rp {{ number_format($order->total_price, 0, ',', '.') }}
                                     </div>
                                 </div>
-                            </div>
 
-                            <button type="button" class="btn w-100 mt-3 pay-btn" 
-                                    data-order-id="{{ $order->id }}"
-                                    style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;">
-                                <i class="bi bi-credit-card me-2"></i>
-                                Pay with Midtrans
-                            </button>
+                                <div class="mb-3">
+                                    <label for="discount{{ $order->id }}" class="form-label fw-bold" style="color:#4b3028;">Apply Discount (Optional)</label>
+                                    <select name="discount_id" id="discount{{ $order->id }}" class="form-select discount-select" style="border-radius:10px; padding:10px;" data-order-id="{{ $order->id }}" data-order-total="{{ $order->total_price }}">
+                                        <option value="">No Discount</option>
+                                        @foreach($activeDiscounts as $disc)
+                                            <option value="{{ $disc->id }}" 
+                                                    data-type="{{ $disc->type }}" 
+                                                    data-value="{{ $disc->value }}"
+                                                    data-min="{{ $disc->min_order_amount ?? 0 }}">
+                                                {{ $disc->name }} 
+                                                @if($disc->type === 'percent')
+                                                    ({{ $disc->value }}%)
+                                                @else
+                                                    (Rp {{ number_format($disc->value, 0, ',', '.') }})
+                                                @endif
+                                                @if($disc->min_order_amount)
+                                                    - Min: Rp {{ number_format($disc->min_order_amount, 0, ',', '.') }}
+                                                @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="card" style="background:#F9F9F9; border:1px solid #E9E6E2; border-radius:10px;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">Subtotal</span>
+                                            <span class="fw-semibold">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2" id="discount-row-{{ $order->id }}" style="display:none !important;">
+                                            <span class="text-success">Discount</span>
+                                            <span class="text-success fw-semibold" id="discount-amount-{{ $order->id }}">- Rp 0</span>
+                                        </div>
+                                        <hr style="margin:8px 0;">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold">Total</span>
+                                            <span class="fw-bold" style="color:#A4823B; font-size:1.25rem;" id="final-total-{{ $order->id }}">
+                                                Rp {{ number_format($order->total_price, 0, ',', '.') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn w-100 mt-3 pay-btn" 
+                                        data-order-id="{{ $order->id }}"
+                                        style="background:#A4823B; color:#F5F0E5; border:none; border-radius:10px; padding:12px; font-weight:700;">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Pay with Midtrans
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-        @empty
-            <div class="col-12">
-                <div class="card shadow-sm border-0" style="border-radius:14px;">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-inbox" style="font-size:3rem; color:#D0D0D0;"></i>
-                        <div class="mt-3 text-muted">No unpaid orders at the moment.</div>
-                    </div>
-                </div>
-            </div>
-        @endforelse
-    </div>
+            @endforeach
+        </div>
+    @endif
 </div>
 
+{{-- Midtrans Snap JS --}}
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -228,7 +279,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.disabled = true;
             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-            // ✅ Step 1: Get Snap Token dari backend
             fetch('{{ route("cashier.payment.process") }}', {
                 method: 'POST',
                 headers: {
@@ -243,12 +293,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // ✅ Step 2: Open Midtrans Snap popup
                     snap.pay(data.snap_token, {
                         onSuccess: function(result) {
                             console.log('Payment success:', result);
-
-                            // ✅ Step 3: Store payment record ke database
+                            
                             fetch('{{ route("cashier.payment.store") }}', {
                                 method: 'POST',
                                 headers: {
@@ -260,44 +308,45 @@ document.addEventListener('DOMContentLoaded', function() {
                                     transaction_id: data.transaction_id,
                                     amount: data.final_amount,
                                     cashier_id: data.cashier_id,
-                                    snap_token: data.snap_token
+                                    snap_token: data.snap_token,
+                                    discount_id: discountId || null
                                 })
                             })
                             .then(response => response.json())
-                            .then(paymentData => {
-                                if (paymentData.success) {
-                                    alert('Payment success!');
+                            .then(storeData => {
+                                if (storeData.success) {
+                                    alert('Payment successful!');
                                     window.location.reload();
                                 } else {
-                                    alert('Payment recorded but failed to save: ' + paymentData.message);
+                                    console.error('Store payment failed:', storeData);
+                                    alert('Payment recorded but there was an issue: ' + (storeData.message || 'Unknown error'));
                                     window.location.reload();
                                 }
                             })
                             .catch(error => {
                                 console.error('Store payment error:', error);
-                                alert('Payment success but failed to record!');
-                                window.location.reload();
+                                alert('Payment success but failed to record! Please contact admin.');
+                                setTimeout(() => {
+                                    window.location.href = '{{ route("cashier.order.history") }}';
+                                }, 2000);
                             });
                         },
                         onPending: function(result) {
                             console.log('Payment pending:', result);
-                            // ✅ JANGAN STORE PAYMENT, hanya log
                             alert('Payment pending. Please complete payment.');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         },
                         onError: function(result) {
                             console.log('Payment error:', result);
-                            alert('Payment failed!');
-                            window.location.reload();
+                            alert('Payment failed: ' + (result.status_message || 'Unknown error'));
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         },
                         onClose: function() {
                             console.log('Popup closed without payment');
-                            // ✅ JANGAN STORE PAYMENT, user cancel
-                            // Re-enable button
-                            const btn = document.querySelector(`[data-order-id="${orderId}"]`);
-                            if (btn) {
-                                btn.disabled = false;
-                                btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
-                            }
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
                         }
                     });
                 } else {
@@ -308,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred');
+                alert('An error occurred while processing payment');
                 this.disabled = false;
                 this.innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay with Midtrans';
             });

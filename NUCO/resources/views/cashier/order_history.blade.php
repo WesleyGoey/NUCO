@@ -33,7 +33,6 @@
                             <th class="px-4 py-3">Table</th>
                             <th class="px-4 py-3">Customer</th>
                             <th class="px-4 py-3">Items</th>
-                            <th class="px-4 py-3">Cashier</th>
                             <th class="px-4 py-3 text-end">Total Paid</th>
                         </tr>
                     </thead>
@@ -62,9 +61,6 @@
                                 <td class="px-4 py-3">
                                     <span class="badge bg-secondary">{{ $order->products->count() }} items</span>
                                 </td>
-                                <td class="px-4 py-3">
-                                    {{ $order->payment->user->username ?? '-' }}
-                                </td>
                                 <td class="px-4 py-3 text-end">
                                     <span class="fw-bold" style="color:#A4823B;">
                                         Rp {{ number_format($order->payment->amount, 0, ',', '.') }}
@@ -78,7 +74,7 @@
                                 </td>
                             </tr>
                             <tr class="collapse" id="order-details-{{ $order->id }}">
-                                <td colspan="8" class="px-4 py-3" style="background:#FAFAFA;">
+                                <td colspan="7" class="px-4 py-3" style="background:#FAFAFA;">
                                     <div class="ms-4">
                                         <div class="fw-semibold mb-2">Order Items:</div>
                                         <ul class="list-unstyled mb-0">
@@ -132,7 +128,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="7" class="text-center py-5">
                                     <i class="bi bi-inbox" style="font-size:3rem; color:#D0D0D0;"></i>
                                     <p class="text-muted mt-3">No payment history found.</p>
                                 </td>

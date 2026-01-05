@@ -26,16 +26,12 @@ class CashierController extends Controller
 
     public function checkout(Request $request): View
     {
-        // Get orders that:
-        // 1. Status = 'sent' (ready for payment)
-        // 2. Don't have any payment record yet
         $orders = Order::with(['user', 'table', 'products', 'discount'])
             ->where('status', 'sent')
             ->whereDoesntHave('payment')
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Get active discounts
         $activeDiscounts = Discount::whereHas('periods', function($q) {
             $today = now()->toDateString();
             $q->where('start_date', '<=', $today)
@@ -50,22 +46,16 @@ class CashierController extends Controller
         return view('cashier.checkout', compact('orders', 'activeDiscounts'));
     }
 
-    /**
-     * Display order history (paid orders).
-     */
     public function orderHistory(Request $request): View
     {
         $orders = Order::with(['user', 'table', 'products', 'discount', 'payment'])
             ->whereHas('payment')
             ->orderBy('created_at', 'desc')
-            ->paginate(20); // ✅ CHANGED to 20
+            ->paginate(20);
 
         return view('cashier.order_history', compact('orders'));
     }
 
-    /**
-     * ✅ Generate Midtrans Snap Token TANPA create payment record
-     */
     public function processPayment(Request $request)
     {
         $request->validate([
@@ -76,7 +66,6 @@ class CashierController extends Controller
         $cashierId = $request->user()->id;
         $order = Order::findOrFail($request->order_id);
 
-        // ✅ Check if payment already exists (success/failed)
         if ($order->payment()->exists()) {
             $existingPayment = $order->payment;
             
@@ -93,7 +82,6 @@ class CashierController extends Controller
         $discountAmount = 0;
         $appliedDiscount = null;
 
-        // Apply discount if selected
         if ($request->discount_id) {
             $discount = Discount::find($request->discount_id);
             if ($discount) {
@@ -117,10 +105,8 @@ class CashierController extends Controller
             }
         }
 
-        // Generate unique transaction ID
         $transactionId = 'ORDER-' . $order->id . '-' . time();
 
-        // Midtrans params
         $params = [
             'transaction_details' => [
                 'order_id' => $transactionId,
@@ -153,15 +139,12 @@ class CashierController extends Controller
         try {
             $snapToken = Snap::getSnapToken($params);
 
-            // ✅ JANGAN CREATE PAYMENT DI SINI!
-            // Payment akan dibuat setelah user bayar sukses (di frontend atau callback)
-
             return response()->json([
                 'success' => true,
                 'snap_token' => $snapToken,
                 'transaction_id' => $transactionId,
-                'order_id' => $order->id, // ✅ Return order_id untuk create payment nanti
-                'cashier_id' => $cashierId, // ✅ Return cashier_id
+                'order_id' => $order->id,
+                'cashier_id' => $cashierId,
                 'original_amount' => $originalAmount,
                 'discount_amount' => $discountAmount,
                 'final_amount' => $finalAmount,
@@ -169,7 +152,6 @@ class CashierController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            // ✅ ADD: Log error for debugging
             Log::error('Midtrans Snap Token Error', [
                 'order_id' => $order->id,
                 'amount' => $finalAmount,
@@ -184,9 +166,6 @@ class CashierController extends Controller
         }
     }
 
-    /**
-     * ✅ Store payment record setelah user bayar sukses
-     */
     public function storePayment(Request $request)
     {
         $request->validate([
@@ -199,7 +178,6 @@ class CashierController extends Controller
 
         $order = Order::find($request->order_id);
 
-        // ✅ Check if payment already exists by transaction_id
         if (Payment::where('transaction_id', $request->transaction_id)->exists()) {
             return response()->json([
                 'success' => false,
@@ -207,7 +185,6 @@ class CashierController extends Controller
             ], 400);
         }
 
-        // Check if payment already exists for order
         if ($order->payment()->exists()) {
             return response()->json([
                 'success' => false,
@@ -215,9 +192,7 @@ class CashierController extends Controller
             ], 400);
         }
 
-        // ✅ Use DB transaction untuk atomicity
         DB::transaction(function () use ($order, $request) {
-            // Create payment record
             Payment::create([
                 'order_id' => $request->order_id,
                 'user_id' => $request->cashier_id,
@@ -228,10 +203,8 @@ class CashierController extends Controller
                 'payment_time' => now(),
             ]);
 
-            // Update order status to completed
             $order->update(['status' => 'completed']);
 
-            // ✅ Release table (status = 'available')
             if ($order->table) {
                 $order->table->update(['status' => 'available']);
             }
@@ -243,9 +216,6 @@ class CashierController extends Controller
         ]);
     }
 
-    /**
-     * ✅ Handle Midtrans callback/notification
-     */
     public function handleCallback(Request $request)
     {
         $serverKey = config('midtrans.server_key');
@@ -258,7 +228,6 @@ class CashierController extends Controller
         $transactionStatus = $request->transaction_status;
         $orderId = $request->order_id;
 
-        // Extract order ID from transaction_id (ORDER-123-1234567890)
         preg_match('/ORDER-(\d+)-/', $orderId, $matches);
         $extractedOrderId = $matches[1] ?? null;
 
@@ -273,7 +242,6 @@ class CashierController extends Controller
 
         DB::transaction(function() use ($order, $transactionStatus, $orderId, $request) {
             if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
-                // ✅ Payment success - create payment record if not exists
                 if (!$order->payment()->exists()) {
                     Payment::create([
                         'order_id' => $order->id,
@@ -286,10 +254,8 @@ class CashierController extends Controller
                     ]);
                 }
 
-                // Update order status to completed
                 $order->update(['status' => 'completed']);
 
-                // ✅ Release table (status = 'available')
                 if ($order->table) {
                     $order->table->update(['status' => 'available']);
                 }

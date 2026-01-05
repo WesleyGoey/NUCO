@@ -14,12 +14,13 @@ use App\Models\Review;
 use App\Models\Ingredient;
 use Illuminate\Support\Arr;
 use Carbon\Carbon;
+use Faker\Factory as Faker; // ✅ TAMBAHKAN
 
 class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = fake();
+        $faker = Faker::create('id_ID'); // ✅ GANTI fake() dengan ini
 
         $products = Product::all();
         $users = User::all();
@@ -30,7 +31,7 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $user = $users->isNotEmpty() ? $users->random() : null;
             $table = $tables->isNotEmpty() ? $tables->random() : null;
             $selected = $products->random(rand(1, 4));

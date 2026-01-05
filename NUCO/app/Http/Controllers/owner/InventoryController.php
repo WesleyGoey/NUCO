@@ -110,7 +110,6 @@ class InventoryController extends Controller
         $validated = $request->validate([
             'type' => ['required', 'in:purchase,waste'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $changeAmount = $validated['type'] === 'purchase' 

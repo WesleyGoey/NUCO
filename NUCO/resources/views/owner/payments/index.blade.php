@@ -54,8 +54,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- ✅ REMOVED: Pending Transactions Card --}}
     </div>
 
     {{-- Transaction Log --}}
@@ -71,7 +69,6 @@
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Payment Time</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Order #</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Transaction ID</th>
-                        <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Cashier</th>
                         <th class="px-4 py-3" style="color:#4b3028; font-weight:700;">Status</th>
                         <th class="px-4 py-3 text-end" style="color:#4b3028; font-weight:700;">Amount</th>
                     </tr>
@@ -88,9 +85,6 @@
                             </td>
                             <td class="px-4 py-3">
                                 <code class="small">{{ $payment->transaction_id }}</code>
-                            </td>
-                            <td class="px-4 py-3">
-                                {{ $payment->user->username ?? '-' }}
                             </td>
                             <td class="px-4 py-3">
                                 @if($payment->status === 'success')
@@ -115,7 +109,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-5">
+                            <td colspan="5" class="text-center text-muted py-5">
                                 <i class="bi bi-inbox" style="font-size:2rem;color:#E9E6E2;"></i>
                                 <div class="mt-2">No payment transactions found.</div>
                             </td>
