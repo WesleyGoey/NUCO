@@ -38,7 +38,6 @@
         </div>
     @endif
 
-    {{-- ✅ UPDATED: Use CSS Grid for equal height cards --}}
     <div class="checkout-grid">
         @forelse($orders as $order)
             <div class="checkout-card-wrapper">
@@ -216,26 +215,22 @@
     </div>
 </div>
 
-{{-- ✅ CSS for Equal Height Cards --}}
 <style>
-/* Grid layout for equal height cards */
 .checkout-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.5rem;
 }
 
-/* Ensure all cards have same height */
 .checkout-card-wrapper {
     display: flex;
 }
 
 .checkout-card-wrapper > .card {
     flex: 1;
-    min-height: 550px; /* ✅ Fixed minimum height for consistency */
+    min-height: 550px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 991.98px) {
     .checkout-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -256,7 +251,6 @@
     }
 }
 
-/* Scrollbar styling for product list */
 .checkout-card-wrapper .card > div:nth-child(3) {
     scrollbar-width: thin;
     scrollbar-color: rgba(164, 130, 59, 0.3) transparent;
@@ -350,7 +344,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         onSuccess: function(result) {
                             console.log('Payment success:', result);
                             
-                            // ✅ FIX: Send correct data to storePayment
                             fetch('{{ route("cashier.payment.store") }}', {
                                 method: 'POST',
                                 headers: {
@@ -380,7 +373,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             .catch(error => {
                                 console.error('Store payment error:', error);
                                 alert('Payment success but failed to record! Please contact admin.');
-                                // Redirect to order history for manual verification
                                 setTimeout(() => {
                                     window.location.href = '{{ route("cashier.order.history") }}';
                                 }, 2000);
